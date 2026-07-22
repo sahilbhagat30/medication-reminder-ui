@@ -1,0 +1,187 @@
+/* Status summary */
+.comm-status-summary {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+
+.comm-stat-card {
+  flex: 1;
+  min-width: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.comm-stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.comm-stat-card.active-stat { border-color: var(--aetna-purple); box-shadow: 0 0 0 2px var(--aetna-purple-light); }
+
+.comm-stat-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.comm-stat-count { font-size: 1.75rem; font-weight: 800; color: var(--text-primary); line-height: 1; }
+.comm-stat-label { font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+
+/* Filter bar */
+.comm-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.comm-filter-label { font-size: 0.83rem; font-weight: 600; color: var(--text-secondary); }
+
+/* Table card */
+.comm-table-card { padding: 0; overflow: hidden; }
+
+/* Member cell */
+.comm-member-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.member-avatar-sm {
+  width: 30px;
+  height: 30px;
+  background: var(--aetna-purple-light);
+  color: var(--aetna-purple-dark);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  border: 1.5px solid var(--aetna-purple);
+}
+
+/* Notif ID */
+.notif-id-badge {
+  background: var(--status-bg-sent);
+  color: var(--status-sent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-sm);
+  font-family: 'Courier New', monospace;
+}
+
+/* Channel cell */
+.channel-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Row actions */
+.comm-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.comm-row { cursor: pointer; }
+
+/* Timeline row */
+.timeline-row td { padding: 0 !important; border-bottom: 2px solid var(--aetna-purple-light); }
+.timeline-row:hover { background: transparent !important; cursor: default; }
+
+.timeline-wrapper {
+  padding: 1.25rem 2rem;
+  background: var(--aetna-purple-light);
+}
+
+/* Timeline */
+.comm-timeline {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.timeline-item {
+  display: flex;
+  align-items: flex-start;
+}
+
+.timeline-step { display: flex; align-items: center; gap: 0.5rem; }
+.timeline-step-container { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
+
+.tl-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--border);
+  border: 2px solid var(--border);
+  flex-shrink: 0;
+  transition: all 0.3s;
+}
+.tl-dot.done  { background: var(--aetna-purple); border-color: var(--aetna-purple); }
+.tl-dot.error { background: var(--status-failed); border-color: var(--status-failed); }
+
+.timeline-connector {
+  flex: 1;
+  height: 2px;
+  background: var(--border);
+  margin: 6px 0.5rem 0;
+  min-width: 40px;
+  transition: background 0.3s;
+}
+.timeline-connector.done   { background: var(--aetna-purple); }
+.timeline-connector.failed { background: var(--status-failed); }
+
+.tl-step-text { text-align: center; }
+.tl-label { font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); }
+.tl-label.active { color: var(--aetna-purple-dark); }
+.tl-time  { font-size: 0.68rem; color: var(--text-light); display: block; }
+
+.tl-fail-reason {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+  font-size: 0.78rem;
+  color: var(--status-failed);
+  background: var(--status-bg-failed);
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-sm);
+}
+
+.retry-badge {
+  background: var(--status-failed);
+  color: #fff;
+  font-size: 0.68rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 10px;
+  margin-left: 0.4rem;
+}
+
+.failure-detail {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+  font-size: 0.85rem;
+  color: var(--status-failed);
+}
+
+.retry-badge-inline {
+  background: var(--status-failed);
+  color: #fff;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.6rem;
+  border-radius: 10px;
+  margin-left: 0.4rem;
+}

@@ -1,0 +1,185 @@
+.page {
+  padding-bottom: 2rem;
+}
+
+/* Summary chips */
+.rx-summary-chips {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--radius-lg);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+  border: 1.5px solid transparent;
+}
+
+.chip-count {
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.chip-all   { background: var(--aetna-purple-light); color: var(--aetna-purple-dark); border-color: var(--aetna-purple); }
+.chip-ready { background: var(--status-bg-success);  color: var(--status-success);   border-color: #A7F3D0; }
+.chip-pending { background: var(--status-bg-pending); color: var(--status-pending);  border-color: #FCD34D; }
+
+.chip:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+
+/* Filters row */
+.rx-filters-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.filter-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 220px;
+}
+
+.filter-search-icon {
+  position: absolute;
+  left: 0.75rem;
+  color: var(--text-light);
+}
+
+.filter-search-input {
+  width: 100%;
+  padding: 0.55rem 0.75rem 0.55rem 2.25rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-family: var(--font-sans);
+  outline: none;
+  transition: border-color 0.2s;
+  background: var(--bg-card);
+}
+.filter-search-input:focus { border-color: var(--aetna-purple); }
+
+.filter-tabs {
+  display: flex;
+  gap: 0.25rem;
+  background: var(--bg-main);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.2rem;
+}
+
+.filter-tab {
+  padding: 0.4rem 1rem;
+  border-radius: 5px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  transition: all 0.18s;
+}
+.filter-tab.active { background: var(--aetna-purple); color: #fff; }
+.filter-tab:hover:not(.active) { background: var(--aetna-purple-light); color: var(--aetna-purple); }
+
+.filter-info {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+
+/* Table card */
+.rx-table-card { padding: 0; overflow: hidden; }
+
+/* Member cell */
+.member-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.member-avatar {
+  width: 34px;
+  height: 34px;
+  background: var(--aetna-purple-light);
+  color: var(--aetna-purple-dark);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  border: 1.5px solid var(--aetna-purple);
+}
+
+/* Drug cell */
+.drug-cell {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding-top: 0.1rem;
+}
+
+/* Store cell */
+.store-cell {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  max-width: 220px;
+}
+
+/* Deadline */
+.deadline-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.deadline-urgent { color: var(--status-failed); font-weight: 700; }
+
+/* Rx ID badge */
+.rx-id-badge {
+  background: var(--aetna-purple-light);
+  color: var(--aetna-purple-dark);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-sm);
+  font-family: 'Courier New', monospace;
+}
+
+/* Row action */
+.row-action-btn {
+  white-space: nowrap;
+}
+
+.rx-row:hover .row-action-btn {
+  background: var(--aetna-purple);
+  color: #fff;
+  border-color: var(--aetna-purple);
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 3rem;
+  color: var(--text-light);
+}

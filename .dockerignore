@@ -1,0 +1,9 @@
+node_modules
+dist
+.git
+.github
+*.docx
+*.xlsx
+README.md
+Dockerfile
+.dockerignore
