@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { prescriptions } from '../data/mockData';
 import {
   Pill, Store, Calendar, CheckCircle2, Clock, ArrowRight,
-  Filter, Search, ChevronRight, ChevronLeft, ChevronRight as ChevRight
+  Search, ChevronLeft, ChevronRight, ChevronsUpDown, ChevronUp, ChevronDown
 } from 'lucide-react';
 import './PrescriptionDashboard.css';
 
@@ -12,43 +12,107 @@ const formatDate = (dateStr) => {
   return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 };
 
-const PICKUP_STATUS_CONFIG = {
-  'Pending Pickup': { cls: 'badge-pending',  label: 'Pending Pickup' },
-  'In Process':     { cls: 'badge-inprocess',label: 'In Process' },
-  'Picked Up':      { cls: 'badge-success',  label: 'Picked Up' },
-  'Cancelled':      { cls: 'badge-failed',   label: 'Cancelled' },
+const formatTimestamp = () => {
+  const now = new Date();
+  return now.toLocaleString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', timeZoneName: 'short',
+  });
+};
+
+// All pickup_status categories
+const STATUS_FILTERS = ['All', 'Pending Pickup', 'In Process', 'Picked Up', 'Cancelled'];
+
+const STATUS_CARD_CONFIG = {
+  'All':            { cls: 'kpi-all',      borderColor: 'var(--aetna-purple)',  icon: Pill },
+  'Pending Pickup': { cls: 'kpi-pending',  borderColor: '#D97706',              icon: Clock },
+  'In Process':     { cls: 'kpi-inprocess',borderColor: '#2563EB',              icon: Clock },
+  'Picked Up':      { cls: 'kpi-pickedup', borderColor: '#0A8754',              icon: CheckCircle2 },
+  'Cancelled':      { cls: 'kpi-cancelled',borderColor: '#DC2626',              icon: ChevronDown },
+};
+
+const PICKUP_STATUS_BADGE = {
+  'Pending Pickup': 'badge-pending',
+  'In Process':     'badge-sent',
+  'Picked Up':      'badge-success',
+  'Cancelled':      'badge-failed',
 };
 
 const PAGE_SIZE = 15;
 
+// Sortable column header
+const SortHeader = ({ label, field, sortField, sortDir, onSort }) => {
+  const active = sortField === field;
+  return (
+    <th className="sortable-th" onClick={() => onSort(field)}>
+      <span className="sort-th-inner">
+        {label}
+        <span className="sort-icons">
+          {active ? (
+            sortDir === 'asc' ? <ChevronUp size={13} /> : <ChevronDown size={13} />
+          ) : (
+            <ChevronsUpDown size={13} style={{ opacity: 0.35 }} />
+          )}
+        </span>
+      </span>
+    </th>
+  );
+};
+
 const PrescriptionDashboard = () => {
   const navigate = useNavigate();
-  const [filter, setFilter]   = useState('all');
-  const [search, setSearch]   = useState('');
-  const [page, setPage]       = useState(1);
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [search, setSearch]             = useState('');
+  const [page, setPage]                 = useState(1);
+  const [sortField, setSortField]       = useState('pickupDeadline');
+  const [sortDir, setSortDir]           = useState('asc');
 
-  const filtered = prescriptions.filter(rx => {
-    const matchFilter =
-      filter === 'all'     ||
-      (filter === 'ready'  && rx.readyForPickup) ||
-      (filter === 'pending' && !rx.readyForPickup);
-    const q = search.toLowerCase();
-    const matchSearch =
-      rx.memberName.toLowerCase().includes(q) ||
-      rx.drugName.toLowerCase().includes(q)   ||
-      rx.id.toLowerCase().includes(q)         ||
-      rx.memberId.toLowerCase().includes(q);
-    return matchFilter && matchSearch;
-  });
+  const snapshotTime = useMemo(() => formatTimestamp(), []);
+
+  // KPI counts per status
+  const kpiCounts = useMemo(() => {
+    const counts = { All: prescriptions.length };
+    STATUS_FILTERS.slice(1).forEach(s => {
+      counts[s] = prescriptions.filter(r => r.pickupStatus === s).length;
+    });
+    return counts;
+  }, []);
+
+  // Filter → Search → Sort
+  const filtered = useMemo(() => {
+    let rows = prescriptions;
+    if (statusFilter !== 'All') rows = rows.filter(r => r.pickupStatus === statusFilter);
+    if (search) {
+      const q = search.toLowerCase();
+      rows = rows.filter(r =>
+        r.memberName.toLowerCase().includes(q) ||
+        r.drugName.toLowerCase().includes(q)   ||
+        r.id.toLowerCase().includes(q)         ||
+        r.memberId.toLowerCase().includes(q)
+      );
+    }
+    // Sort
+    rows = [...rows].sort((a, b) => {
+      let av = a[sortField] ?? ''; let bv = b[sortField] ?? '';
+      if (typeof av === 'boolean') av = av ? 1 : 0;
+      if (typeof bv === 'boolean') bv = bv ? 1 : 0;
+      if (av < bv) return sortDir === 'asc' ? -1 : 1;
+      if (av > bv) return sortDir === 'asc' ?  1 : -1;
+      return 0;
+    });
+    return rows;
+  }, [statusFilter, search, sortField, sortDir]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated  = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const readyCount   = prescriptions.filter(r => r.readyForPickup).length;
-  const pendingCount = prescriptions.filter(r => !r.readyForPickup).length;
-
-  const handleFilterChange = (f) => { setFilter(f); setPage(1); };
-  const handleSearch = (v) => { setSearch(v); setPage(1); };
+  const handleStatusFilter = (s) => { setStatusFilter(s); setPage(1); };
+  const handleSearch       = (v) => { setSearch(v); setPage(1); };
+  const handleSort = (field) => {
+    if (sortField === field) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortField(field); setSortDir('asc'); }
+    setPage(1);
+  };
 
   return (
     <div className="page fade-in-up">
@@ -56,33 +120,51 @@ const PrescriptionDashboard = () => {
       <div className="page-header-row">
         <div className="page-header">
           <h1><Pill size={24} style={{ color: 'var(--aetna-purple)' }} /> Prescription Dashboard</h1>
-          <p>Monitor all prescription records and their pickup status at CVS stores. Showing data from <strong>150 prescriptions</strong> across 100 members.</p>
+          <p>
+            Monitor all prescription records and their pickup status at CVS stores.&nbsp;
+            <strong>{prescriptions.length} prescriptions</strong> across 100 members.
+          </p>
+          {/* Snapshot label */}
+          <div className="snapshot-label">
+            <Clock size={12} /> Snapshot as of <strong>{snapshotTime}</strong>
+          </div>
         </div>
         <button className="btn btn-primary" onClick={() => navigate('/eligibility')}>
           Review Eligibility <ArrowRight size={15} />
         </button>
       </div>
 
-      {/* Summary Chips */}
-      <div className="rx-summary-chips">
-        <div className={`chip chip-all ${filter==='all'?'chip-active':''}`} onClick={() => handleFilterChange('all')}>
-          <span className="chip-count">{prescriptions.length}</span>
-          <span>Total Rx</span>
-        </div>
-        <div className={`chip chip-ready ${filter==='ready'?'chip-active':''}`} onClick={() => handleFilterChange('ready')}>
-          <CheckCircle2 size={16} />
-          <span className="chip-count">{readyCount}</span>
-          <span>Ready for Pickup</span>
-        </div>
-        <div className={`chip chip-pending ${filter==='pending'?'chip-active':''}`} onClick={() => handleFilterChange('pending')}>
-          <Clock size={16} />
-          <span className="chip-count">{pendingCount}</span>
-          <span>Processing</span>
-        </div>
+      {/* KPI Status Cards — 5 clickable cards */}
+      <div className="rx-kpi-cards">
+        {STATUS_FILTERS.map(status => {
+          const cfg = STATUS_CARD_CONFIG[status];
+          const Icon = cfg.icon;
+          const isActive = statusFilter === status;
+          return (
+            <div
+              key={status}
+              className={`rx-kpi-card ${cfg.cls} ${isActive ? 'rx-kpi-active' : ''}`}
+              style={{ '--kpi-border': cfg.borderColor }}
+              onClick={() => handleStatusFilter(status)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={e => e.key === 'Enter' && handleStatusFilter(status)}
+            >
+              <div className="rx-kpi-icon-wrap">
+                <Icon size={18} style={{ color: cfg.borderColor }} />
+              </div>
+              <div className="rx-kpi-count" style={{ color: cfg.borderColor }}>
+                {kpiCounts[status]}
+              </div>
+              <div className="rx-kpi-label">{status}</div>
+              {isActive && <div className="rx-kpi-active-bar" style={{ background: cfg.borderColor }} />}
+            </div>
+          );
+        })}
       </div>
 
-      {/* Filters Row */}
-      <div className="rx-filters-row">
+      {/* Search only (no filter tabs) */}
+      <div className="rx-search-row">
         <div className="filter-search-box">
           <Search size={15} className="filter-search-icon" />
           <input
@@ -93,21 +175,10 @@ const PrescriptionDashboard = () => {
             className="filter-search-input"
           />
         </div>
-        <div className="filter-tabs">
-          {['all', 'ready', 'pending'].map(f => (
-            <button
-              key={f}
-              className={`filter-tab ${filter === f ? 'active' : ''}`}
-              onClick={() => handleFilterChange(f)}
-            >
-              {f === 'all' ? 'All' : f === 'ready' ? 'Ready' : 'Processing'}
-            </button>
-          ))}
-        </div>
-        <div className="filter-info">
-          <Filter size={13} />
-          <span>{filtered.length} records</span>
-        </div>
+        <span className="filter-info">
+          {filtered.length} record{filtered.length !== 1 ? 's' : ''}
+          {statusFilter !== 'All' && <> — filtered by <strong>{statusFilter}</strong></>}
+        </span>
       </div>
 
       {/* Table */}
@@ -116,22 +187,22 @@ const PrescriptionDashboard = () => {
           <table>
             <thead>
               <tr>
-                <th>Rx ID</th>
-                <th>Member</th>
-                <th>Drug / Strength</th>
-                <th>CVS Store</th>
-                <th>Pickup Status</th>
-                <th>Pickup Deadline</th>
-                <th>Prescriber / Specialty</th>
-                <th>Plan Type</th>
-                <th>Action</th>
+                <SortHeader label="Rx ID"               field="id"             sortField={sortField} sortDir={sortDir} onSort={handleSort} />
+                <SortHeader label="Member"              field="memberName"     sortField={sortField} sortDir={sortDir} onSort={handleSort} />
+                <SortHeader label="Drug / Strength"     field="drugName"       sortField={sortField} sortDir={sortDir} onSort={handleSort} />
+                <SortHeader label="CVS Store"           field="storeName"      sortField={sortField} sortDir={sortDir} onSort={handleSort} />
+                <SortHeader label="Pickup Status"       field="pickupStatus"   sortField={sortField} sortDir={sortDir} onSort={handleSort} />
+                <SortHeader label="Pickup Deadline"     field="pickupDeadline" sortField={sortField} sortDir={sortDir} onSort={handleSort} />
+                <SortHeader label="Prescriber"         field="prescriber"     sortField={sortField} sortDir={sortDir} onSort={handleSort} />
+                <SortHeader label="Plan Type"           field="planType"       sortField={sortField} sortDir={sortDir} onSort={handleSort} />
               </tr>
             </thead>
             <tbody>
               {paginated.map(rx => {
-                const statusCfg = PICKUP_STATUS_CONFIG[rx.pickupStatus] || PICKUP_STATUS_CONFIG['In Process'];
+                const badgeCls = PICKUP_STATUS_BADGE[rx.pickupStatus] || 'badge-pending';
+                const isUrgent = rx.pickupDeadline && new Date(rx.pickupDeadline) < new Date(Date.now() + 86400000 * 2);
                 return (
-                  <tr key={rx.id} onClick={() => navigate('/eligibility')} className="rx-row">
+                  <tr key={rx.id} className="rx-row">
                     <td>
                       <span className="rx-id-badge">{rx.id}</span>
                     </td>
@@ -148,8 +219,8 @@ const PrescriptionDashboard = () => {
                       <div className="drug-cell">
                         <Pill size={14} style={{ color: 'var(--aetna-purple)', flexShrink: 0 }} />
                         <div>
-                          <div className="fw-600">{rx.drugName}</div>
-                          <div className="text-muted">{rx.drugStrength}</div>
+                          <div className="drug-name">{rx.drugName}</div>
+                          <div className="drug-strength-pill">{rx.drugStrength}</div>
                         </div>
                       </div>
                     </td>
@@ -160,36 +231,27 @@ const PrescriptionDashboard = () => {
                       </div>
                     </td>
                     <td>
-                      <span className={`badge ${statusCfg.cls}`}>
-                        {rx.readyForPickup
-                          ? <CheckCircle2 size={12} />
-                          : <Clock size={12} />}
-                        {statusCfg.label}
+                      <span className={`badge ${badgeCls}`}>
+                        {rx.readyForPickup ? <CheckCircle2 size={12} /> : <Clock size={12} />}
+                        {rx.pickupStatus}
                       </span>
                     </td>
                     <td>
                       <div className="deadline-cell">
                         <Calendar size={13} style={{ color: 'var(--text-secondary)' }} />
-                        <span className={`text-sm ${rx.pickupDeadline && new Date(rx.pickupDeadline) < new Date(Date.now() + 86400000*2) ? 'deadline-urgent' : ''}`}>
+                        <span className={`text-sm ${isUrgent ? 'deadline-urgent' : ''}`}>
                           {formatDate(rx.pickupDeadline)}
                         </span>
                       </div>
                     </td>
                     <td>
-                      <div>
-                        <div className="fw-600 text-sm">{rx.prescriber}</div>
-                        <div className="text-muted">{rx.specialty}</div>
-                      </div>
+                      <div className="fw-600 text-sm">{rx.prescriber}</div>
+                      <div className="text-muted">{rx.specialty}</div>
                     </td>
                     <td>
-                      <span className={`badge ${rx.planType==='Medicare' ? 'badge-medicare' : rx.planType==='PBM' ? 'badge-pbm' : 'badge-commercial'}`}>
+                      <span className={`badge ${rx.planType === 'Medicare' ? 'badge-medicare' : rx.planType === 'PBM' ? 'badge-pbm' : 'badge-commercial'}`}>
                         {rx.planType || '—'}
                       </span>
-                    </td>
-                    <td>
-                      <button className="btn btn-outline btn-sm row-action-btn">
-                        Review <ChevRight size={13} />
-                      </button>
                     </td>
                   </tr>
                 );
@@ -207,34 +269,22 @@ const PrescriptionDashboard = () => {
         {/* Pagination */}
         <div className="pagination-row">
           <span className="pagination-info">
-            Showing {Math.min((page-1)*PAGE_SIZE+1, filtered.length)}–{Math.min(page*PAGE_SIZE, filtered.length)} of {filtered.length}
+            Showing {filtered.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
           </span>
           <div className="pagination-controls">
-            <button
-              className="btn btn-outline btn-sm"
-              disabled={page <= 1}
-              onClick={() => setPage(p => p - 1)}
-            >
+            <button className="btn btn-outline btn-sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
               <ChevronLeft size={14} />
             </button>
             {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
               const p = page <= 3 ? i + 1 : page - 2 + i;
               if (p < 1 || p > totalPages) return null;
               return (
-                <button
-                  key={p}
-                  className={`btn btn-sm ${p === page ? 'btn-primary' : 'btn-outline'}`}
-                  onClick={() => setPage(p)}
-                >
+                <button key={p} className={`btn btn-sm ${p === page ? 'btn-primary' : 'btn-outline'}`} onClick={() => setPage(p)}>
                   {p}
                 </button>
               );
             })}
-            <button
-              className="btn btn-outline btn-sm"
-              disabled={page >= totalPages}
-              onClick={() => setPage(p => p + 1)}
-            >
+            <button className="btn btn-outline btn-sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>
               <ChevronRight size={14} />
             </button>
           </div>

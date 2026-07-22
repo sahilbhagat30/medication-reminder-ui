@@ -3,16 +3,16 @@ import { Bell, Search } from 'lucide-react';
 import './Topbar.css';
 
 const routeTitles = {
-  '/':              { title: 'Prescription Dashboard', step: 'Step 1 of 5' },
-  '/eligibility':  { title: 'Eligibility Review',     step: 'Step 2 of 5' },
-  '/campaign':     { title: 'Campaign Preview',        step: 'Step 3 of 5' },
-  '/communication':{ title: 'Communication Status',   step: 'Step 4 of 5' },
-  '/summary':      { title: 'Summary Dashboard',      step: 'Step 5 of 5' },
+  '/':               'Prescriptions',
+  '/eligibility':   'Eligibility',
+  '/campaign':      'Campaign',
+  '/communication': 'Communication',
+  '/summary':       'Summary',
 };
 
 const Topbar = () => {
   const location = useLocation();
-  const info = routeTitles[location.pathname] || { title: 'Med Reminder', step: '' };
+  const pageTitle = routeTitles[location.pathname] || 'Med Reminder';
 
   return (
     <header className="topbar">
@@ -20,9 +20,8 @@ const Topbar = () => {
         <div className="topbar-breadcrumb">
           <span className="breadcrumb-app">Aetna Med Reminder</span>
           <span className="breadcrumb-sep">›</span>
-          <span className="breadcrumb-page">{info.title}</span>
+          <span className="breadcrumb-page">{pageTitle}</span>
         </div>
-        {info.step && <span className="topbar-step-badge">{info.step}</span>}
       </div>
 
       <div className="topbar-right">

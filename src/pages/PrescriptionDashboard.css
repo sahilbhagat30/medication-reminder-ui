@@ -2,40 +2,85 @@
   padding-bottom: 2rem;
 }
 
-/* Summary chips */
-.rx-summary-chips {
+/* ── Snapshot label ─────────────────────────────────────────────────── */
+.snapshot-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  background: var(--aetna-purple-light);
+  border: 1px solid var(--aetna-purple);
+  border-radius: 20px;
+  padding: 0.2rem 0.75rem;
+}
+
+/* ── KPI Status Cards ───────────────────────────────────────────────── */
+.rx-kpi-cards {
   display: flex;
   gap: 1rem;
   margin-bottom: 1.5rem;
   flex-wrap: wrap;
 }
 
-.chip {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.65rem 1.25rem;
-  border-radius: var(--radius-lg);
-  font-size: 0.85rem;
-  font-weight: 600;
+.rx-kpi-card {
+  flex: 1;
+  min-width: 140px;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.1rem 1.25rem 1rem;
   cursor: pointer;
-  transition: all 0.18s;
-  border: 1.5px solid transparent;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  box-shadow: var(--shadow-sm);
 }
 
-.chip-count {
-  font-size: 1.1rem;
+.rx-kpi-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--kpi-border);
+}
+
+.rx-kpi-active {
+  border-color: var(--kpi-border) !important;
+  background: color-mix(in srgb, var(--kpi-border) 6%, white);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--kpi-border) 25%, transparent);
+}
+
+.rx-kpi-active-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+}
+
+.rx-kpi-icon-wrap {
+  margin-bottom: 0.1rem;
+}
+
+.rx-kpi-count {
+  font-size: 1.75rem;
   font-weight: 800;
+  line-height: 1;
 }
 
-.chip-all   { background: var(--aetna-purple-light); color: var(--aetna-purple-dark); border-color: var(--aetna-purple); }
-.chip-ready { background: var(--status-bg-success);  color: var(--status-success);   border-color: #A7F3D0; }
-.chip-pending { background: var(--status-bg-pending); color: var(--status-pending);  border-color: #FCD34D; }
+.rx-kpi-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
 
-.chip:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
-
-/* Filters row */
-.rx-filters-row {
+/* ── Search row (no filter tabs) ────────────────────────────────────── */
+.rx-search-row {
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -48,7 +93,7 @@
   display: flex;
   align-items: center;
   flex: 1;
-  min-width: 220px;
+  min-width: 260px;
 }
 
 .filter-search-icon {
@@ -70,42 +115,38 @@
 }
 .filter-search-input:focus { border-color: var(--aetna-purple); }
 
-.filter-tabs {
-  display: flex;
-  gap: 0.25rem;
-  background: var(--bg-main);
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 0.2rem;
-}
-
-.filter-tab {
-  padding: 0.4rem 1rem;
-  border-radius: 5px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  font-family: var(--font-sans);
-  cursor: pointer;
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  transition: all 0.18s;
-}
-.filter-tab.active { background: var(--aetna-purple); color: #fff; }
-.filter-tab:hover:not(.active) { background: var(--aetna-purple-light); color: var(--aetna-purple); }
-
 .filter-info {
   display: flex;
   align-items: center;
   gap: 0.35rem;
   color: var(--text-secondary);
   font-size: 0.82rem;
+  white-space: nowrap;
 }
 
-/* Table card */
+/* ── Table card ─────────────────────────────────────────────────────── */
 .rx-table-card { padding: 0; overflow: hidden; }
 
-/* Member cell */
+/* ── Sortable headers ───────────────────────────────────────────────── */
+.sortable-th {
+  cursor: pointer;
+  user-select: none;
+}
+.sortable-th:hover { background: rgba(125,63,152,0.08); }
+
+.sort-th-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.sort-icons {
+  display: flex;
+  align-items: center;
+  color: var(--aetna-purple);
+}
+
+/* ── Member cell ────────────────────────────────────────────────────── */
 .member-cell {
   display: flex;
   align-items: center;
@@ -127,7 +168,7 @@
   border: 1.5px solid var(--aetna-purple);
 }
 
-/* Drug cell */
+/* ── Drug cell ──────────────────────────────────────────────────────── */
 .drug-cell {
   display: flex;
   align-items: flex-start;
@@ -135,15 +176,33 @@
   padding-top: 0.1rem;
 }
 
-/* Store cell */
+.drug-name {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+}
+
+.drug-strength-pill {
+  display: inline-block;
+  background: var(--aetna-purple-light);
+  color: var(--aetna-purple-dark);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.1rem 0.5rem;
+  border-radius: 20px;
+  margin-top: 0.2rem;
+  border: 1px solid rgba(125,63,152,0.2);
+}
+
+/* ── Store cell ─────────────────────────────────────────────────────── */
 .store-cell {
   display: flex;
   align-items: flex-start;
   gap: 0.4rem;
-  max-width: 220px;
+  max-width: 200px;
 }
 
-/* Deadline */
+/* ── Deadline ───────────────────────────────────────────────────────── */
 .deadline-cell {
   display: flex;
   align-items: center;
@@ -152,7 +211,7 @@
 
 .deadline-urgent { color: var(--status-failed); font-weight: 700; }
 
-/* Rx ID badge */
+/* ── Rx ID badge ────────────────────────────────────────────────────── */
 .rx-id-badge {
   background: var(--aetna-purple-light);
   color: var(--aetna-purple-dark);
@@ -163,18 +222,11 @@
   font-family: 'Courier New', monospace;
 }
 
-/* Row action */
-.row-action-btn {
-  white-space: nowrap;
-}
+/* ── Row hover ──────────────────────────────────────────────────────── */
+.rx-row { cursor: default; }
+.rx-row:hover { background: #F8F5FC; }
 
-.rx-row:hover .row-action-btn {
-  background: var(--aetna-purple);
-  color: #fff;
-  border-color: var(--aetna-purple);
-}
-
-/* Empty state */
+/* ── Empty state ────────────────────────────────────────────────────── */
 .empty-state {
   display: flex;
   flex-direction: column;

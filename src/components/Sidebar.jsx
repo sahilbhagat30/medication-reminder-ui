@@ -6,19 +6,43 @@ import {
   MessageSquare,
   BarChart3,
 } from 'lucide-react';
+import { prescriptions, summaryMetrics } from '../data/mockData';
 import './Sidebar.css';
 
 const navItems = [
-  { path: '/',              label: 'Prescriptions',       icon: LayoutDashboard, step: '01' },
-  { path: '/eligibility',  label: 'Eligibility Review',  icon: ShieldCheck,     step: '02' },
-  { path: '/campaign',     label: 'Campaign Preview',    icon: Megaphone,       step: '03' },
-  { path: '/communication',label: 'Comm. Status',        icon: MessageSquare,   step: '04' },
-  { path: '/summary',      label: 'Summary Dashboard',   icon: BarChart3,       step: '05' },
+  { path: '/',               label: 'Prescriptions', icon: LayoutDashboard },
+  { path: '/eligibility',   label: 'Eligibility',   icon: ShieldCheck },
+  { path: '/campaign',      label: 'Campaign',       icon: Megaphone },
+  { path: '/communication', label: 'Communication',  icon: MessageSquare },
+  { path: '/summary',       label: 'Summary',        icon: BarChart3 },
+];
+
+// Derive persistent KPI counts from real data
+const kpiStats = [
+  {
+    label: 'Total Rx',
+    value: prescriptions.length,
+    color: 'var(--aetna-purple)',
+  },
+  {
+    label: 'Ready',
+    value: prescriptions.filter(r => r.readyForPickup).length,
+    color: '#0A8754',
+  },
+  {
+    label: 'Notified',
+    value: summaryMetrics.notificationsSent,
+    color: '#2563EB',
+  },
+  {
+    label: 'Delivered',
+    value: summaryMetrics.deliveredCount,
+    color: '#D97706',
+  },
 ];
 
 const Sidebar = () => {
   const location = useLocation();
-  const activeIndex = navItems.findIndex(item => item.path === location.pathname);
 
   return (
     <aside className="sidebar">
@@ -39,30 +63,35 @@ const Sidebar = () => {
       <div className="sidebar-section-label">USER FLOW</div>
 
       <nav className="sidebar-nav">
-        {navItems.map((item, idx) => {
+        {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
-          const isCompleted = idx < activeIndex;
 
           return (
             <Link
               key={item.path}
               to={item.path}
-              className={`nav-item ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}`}
+              className={`nav-item ${isActive ? 'active' : ''}`}
             >
-              <div className="nav-step-badge">{item.step}</div>
               <Icon size={17} className="nav-icon" />
               <span>{item.label}</span>
-              {isCompleted && (
-                <svg className="nav-check" width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <circle cx="7" cy="7" r="7" fill="#0A8754"/>
-                  <path d="M4 7L6 9L10 5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              )}
             </Link>
           );
         })}
       </nav>
+
+      {/* Persistent KPI Stats */}
+      <div className="sidebar-kpi-block">
+        <div className="sidebar-kpi-title">PLATFORM KPIs</div>
+        <div className="sidebar-kpi-grid">
+          {kpiStats.map(k => (
+            <div className="sidebar-kpi-item" key={k.label}>
+              <span className="sidebar-kpi-val" style={{ color: k.color }}>{k.value.toLocaleString()}</span>
+              <span className="sidebar-kpi-label">{k.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
 
       <div className="sidebar-footer">
         <div className="sidebar-footer-info">
