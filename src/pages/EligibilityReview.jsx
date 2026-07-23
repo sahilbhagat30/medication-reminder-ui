@@ -60,16 +60,15 @@ const PICKUP_STATUS_BADGE = {
 };
 
 // Derive rule results & score from legacy data (4-key) mapped to 6-rule ERD
-function deriveRuleResults(member) {
+function deriveRuleResults(member, prescriptionLookup) {
   const r = member.ruleResults || {};
-  // "pending_pickup" aligns with pickupStatus via prescriptionLookup
-  const pLookup = prescriptionLookup[member.rxId] || {};
+  const pLookup = (prescriptionLookup || {})[member.rxId] || {};
   const pendingPickup = pLookup.pickupStatus === 'Pending Pickup';
 
   return {
     ready_for_pickup:          r.ready_for_pickup         ?? false,
     pending_pickup:            pendingPickup,
-    pickup_deadline_valid:     r.ready_for_pickup         ?? false, // if ready, deadline still valid
+    pickup_deadline_valid:     r.ready_for_pickup         ?? false,
     active_coverage:           r.active_member            ?? r.communication_preference_exists ?? false,
     preferred_channel_exists:  r.communication_preference_exists ?? false,
     permission_granted:        r.opted_in                 ?? false,
@@ -217,9 +216,9 @@ const EligibilityReview = () => {
 
   // Enrich data with derived rule results & corrected score
   const enriched = useMemo(() => eligibilityData.map(m => {
-    const derived = deriveRuleResults(m);
+    const derived = deriveRuleResults(m, prescriptionLookup);
     const score   = computeScore(derived);
-    const pLookup = prescriptionLookup[m.rxId] || {};
+    const pLookup = (prescriptionLookup || {})[m.rxId] || {};
 
     let rawVal = '—';
     if (m.preferredChannel === 'SMS') rawVal = pLookup.phone || '—';
