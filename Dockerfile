@@ -3,24 +3,35 @@ FROM node:20-alpine AS build
 
 WORKDIR /app
 
-# Install dependencies
+# Install frontend dependencies
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# Copy source files and build
+# Copy source files and build React app
 COPY . .
+# Set VITE_API_URL empty so the React app uses the same origin (/api) for fetching
+ENV VITE_API_URL=""
 RUN npm run build
 
-# Stage 2: Serve with Nginx
-FROM nginx:alpine
+# Stage 2: Serve with Node.js Express BFF
+FROM node:20-alpine
 
-# Copy custom Nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+WORKDIR /app
 
-# Copy built assets from Stage 1
-COPY --from=build /app/dist /usr/share/nginx/html
+# Copy the Express server code
+COPY server/ ./server/
 
-# Expose port 8080 (Google Cloud Run default port)
+# Install server dependencies
+WORKDIR /app/server
+RUN npm ci --omit=dev
+
+# Copy the built React app from Stage 1 into /dist
+WORKDIR /app
+COPY --from=build /app/dist ./dist
+
+# Expose port 8080 (Cloud Run default)
 EXPOSE 8080
 
-CMD ["nginx", "-g", "daemon off;"]
+# Start the Express BFF (which also serves the React static files)
+WORKDIR /app/server
+CMD ["npm", "start"]
