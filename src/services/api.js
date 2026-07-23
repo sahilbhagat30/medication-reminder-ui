@@ -16,21 +16,33 @@ import {
 } from '../data/mockData.js';
 
 // ── Base URL ──────────────────────────────────────────────────────────────────
-// Set VITE_API_URL=http://localhost:5001 in .env.local to enable live data.
-const BASE = import.meta.env.VITE_API_URL || '';
+// In production (Cloud Run), the React app is served by the same Express server
+// that hosts /api/* routes, so we use relative paths (no base needed).
+// In local dev, set VITE_API_URL=http://localhost:5001 in .env.local to hit the BFF.
+// If VITE_API_URL is not set in dev, the app falls back to mock data.
+const BASE = import.meta.env.VITE_API_URL ?? null;
+const IS_PROD = import.meta.env.PROD; // true when built by vite (npm run build)
 
 // ── Helper: fetch JSON with fallback ─────────────────────────────────────────
 async function apiFetch(path, fallback) {
-  if (!BASE) return fallback;           // No BFF configured — use mock immediately
+  // In production, always try the live API (same-origin /api/...)
+  // In dev, only try if VITE_API_URL is explicitly set
+  const shouldFetch = IS_PROD || BASE;
+  if (!shouldFetch) {
+    console.info(`[API] Dev mode — no VITE_API_URL set, using mock data for ${path}`);
+    return fallback;
+  }
+
+  const prefix = BASE || ''; // In production: '' (same-origin), in dev: e.g. 'http://localhost:5001'
   try {
-    const res = await fetch(`${BASE}/api${path}`, {
+    const res = await fetch(`${prefix}/api${path}`, {
       headers: { 'Content-Type': 'application/json' },
-      signal: AbortSignal.timeout(5000),  // 5s timeout
+      signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json();
   } catch (err) {
-    console.warn(`[API] BFF unavailable (${path}), using mock data. Reason: ${err.message}`);
+    console.warn(`[API] BFF error (${path}), falling back to mock data. Reason: ${err.message}`);
     return fallback;
   }
 }

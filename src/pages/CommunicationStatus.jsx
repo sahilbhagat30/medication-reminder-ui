@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { communicationStatus } from '../data/mockData';
+import { fetchCommunications } from '../services/api';
 import {
   MessageSquare, CheckCircle2, XCircle, Clock, Eye,
   RefreshCw, ArrowRight, ArrowLeft, Mail, Bell,
@@ -115,8 +115,17 @@ const CommunicationStatus = () => {
   const [page, setPage]                 = useState(1);
   const [sortField, setSortField]       = useState('notifId');
   const [sortDir, setSortDir]           = useState('asc');
+  const [communicationStatus, setCommunicationStatus] = useState([]);
+  const [loading, setLoading]           = useState(true);
 
   const snapshotTime = useMemo(() => formatTimestamp(), []);
+
+  useEffect(() => {
+    fetchCommunications().then(data => {
+      setCommunicationStatus(data);
+      setLoading(false);
+    });
+  }, []);
 
   const statusCounts = useMemo(() => {
     return Object.keys(statusConfig).reduce((acc, s) => {

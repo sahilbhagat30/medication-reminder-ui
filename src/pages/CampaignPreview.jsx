@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { campaigns } from '../data/mockData';
+import { fetchCampaigns } from '../services/api';
 import {
   Megaphone, Mail, MessageSquare, Bell, ArrowRight, ArrowLeft,
   Send, Eye, Calendar, User, Pill, Store, CheckCircle2, Clock, Key, FileText
@@ -142,13 +142,19 @@ const CampaignCard = ({ campaign, onSend }) => {
 
 const CampaignPreview = () => {
   const navigate  = useNavigate();
-  const [campaignList, setCampaignList] = useState(campaigns);
+  const [campaignList, setCampaignList] = useState([]);
   const [channelFilter, setChannelFilter] = useState('all');
   const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
 
-  const [sentCount, setSentCount] = useState(
-    campaigns.filter(c => c.status !== 'Active').length
-  );
+  useEffect(() => {
+    fetchCampaigns().then(data => {
+      setCampaignList(data);
+      setLoading(false);
+    });
+  }, []);
+
+  const [sentCount, setSentCount] = useState(0);
 
   const handleSend = (id) => {
     setCampaignList(prev =>

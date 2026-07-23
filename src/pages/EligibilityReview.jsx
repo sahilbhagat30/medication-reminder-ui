@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { eligibilityData, prescriptions } from '../data/mockData';
+import { fetchEligibility, fetchPrescriptions } from '../services/api';
 import {
   ShieldCheck, ShieldX, CheckCircle2, XCircle, ArrowRight,
   ArrowLeft, User, ChevronDown, ChevronUp, Clock,
@@ -49,16 +49,8 @@ const RULES = [
   },
 ];
 
-// Build a lookup: rxId → {pickupDeadline, coverageEndDate, phone, email, memberId, pickupStatus}
-const prescriptionLookup = Object.fromEntries(
-  prescriptions.map(rx => [rx.id, { 
-    pickupDeadline: rx.pickupDeadline, 
-    pickupStatus: rx.pickupStatus,
-    phone: rx.phone,
-    email: rx.email,
-    memberId: rx.memberId
-  }])
-);
+// prescriptionLookup is built dynamically inside the component from fetched data
+
 
 const PICKUP_STATUS_BADGE = {
   'Pending Pickup': 'badge-pending',
@@ -198,15 +190,37 @@ const EligibilityReview = () => {
   const [page, setPage]               = useState(1);
   const [sortField, setSortField]     = useState('memberName');
   const [sortDir, setSortDir]         = useState('asc');
+  const [eligibilityData, setEligibilityData]   = useState([]);
+  const [prescriptionsRaw, setPrescriptionsRaw] = useState([]);
+  const [loading, setLoading]                   = useState(true);
 
   const snapshotTime = useMemo(() => formatTimestamp(), []);
+
+  useEffect(() => {
+    Promise.all([fetchEligibility(), fetchPrescriptions()]).then(([elig, rxs]) => {
+      setEligibilityData(elig);
+      setPrescriptionsRaw(rxs);
+      setLoading(false);
+    });
+  }, []);
+
+  // Build lookup from fetched prescriptions
+  const prescriptionLookup = useMemo(() =>
+    Object.fromEntries(prescriptionsRaw.map(rx => [rx.id, {
+      pickupDeadline: rx.pickupDeadline,
+      pickupStatus: rx.pickupStatus,
+      phone: rx.phone,
+      email: rx.email,
+      memberId: rx.memberId,
+    }])),
+  [prescriptionsRaw]);
 
   // Enrich data with derived rule results & corrected score
   const enriched = useMemo(() => eligibilityData.map(m => {
     const derived = deriveRuleResults(m);
     const score   = computeScore(derived);
     const pLookup = prescriptionLookup[m.rxId] || {};
-    
+
     let rawVal = '—';
     if (m.preferredChannel === 'SMS') rawVal = pLookup.phone || '—';
     else if (m.preferredChannel === 'Email') rawVal = pLookup.email || '—';
@@ -214,16 +228,16 @@ const EligibilityReview = () => {
 
     const coverageEndDate = pLookup.pickupDeadline ? `${pLookup.pickupDeadline.split('-')[0]}-12-31` : '2026-12-31';
 
-    return { 
-      ...m, 
-      derived, 
-      score, 
+    return {
+      ...m,
+      derived,
+      score,
       pickupDeadline: pLookup.pickupDeadline,
       pickupStatus: pLookup.pickupStatus || '—',
       channelValue: rawVal,
       coverageEndDate
     };
-  }), []);
+  }), [eligibilityData, prescriptionLookup]);
 
   const eligibleCount    = useMemo(() => enriched.filter(m => m.status === 'Eligible').length, [enriched]);
   const notEligibleCount = enriched.length - eligibleCount;

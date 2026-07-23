@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { prescriptions } from '../data/mockData';
+import { fetchPrescriptions } from '../services/api';
 import {
   Pill, Store, Calendar, CheckCircle2, Clock, ArrowRight,
   Search, ChevronLeft, ChevronRight, ChevronsUpDown, ChevronUp, ChevronDown, Download
@@ -84,8 +84,18 @@ const PrescriptionDashboard = () => {
   const [page, setPage]                 = useState(1);
   const [sortField, setSortField]       = useState('pickupDeadline');
   const [sortDir, setSortDir]           = useState('asc');
+  const [prescriptions, setPrescriptions] = useState([]);
+  const [loading, setLoading]             = useState(true);
 
   const snapshotTime = useMemo(() => formatTimestamp(), []);
+
+  // Load from BFF (or mock fallback)
+  useEffect(() => {
+    fetchPrescriptions().then(data => {
+      setPrescriptions(data);
+      setLoading(false);
+    });
+  }, []);
 
   // KPI counts per status
   const kpiCounts = useMemo(() => {
@@ -94,7 +104,7 @@ const PrescriptionDashboard = () => {
       counts[s] = prescriptions.filter(r => r.pickupStatus === s).length;
     });
     return counts;
-  }, []);
+  }, [prescriptions]);
 
   // Filter → Search → Sort
   const filtered = useMemo(() => {

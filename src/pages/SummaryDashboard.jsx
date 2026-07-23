@@ -1,6 +1,7 @@
-import { useMemo, useState, useRef } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { summaryMetrics, channelBreakdown, dailyChartData } from '../data/mockData';
+import { fetchSummary } from '../services/api';
+import { summaryMetrics as defaultMetrics, channelBreakdown as defaultChannelBreakdown, dailyChartData as defaultDailyData } from '../data/mockData';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell
@@ -42,6 +43,17 @@ const SummaryDashboard = () => {
   const snapshotTime   = useMemo(() => formatTimestamp(), []);
   const [exporting, setExporting] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const [summaryMetrics, setSummaryMetrics]     = useState(defaultMetrics);
+  const [channelBreakdown, setChannelBreakdown] = useState(defaultChannelBreakdown);
+  const [dailyChartData, setDailyChartData]     = useState(defaultDailyData);
+
+  useEffect(() => {
+    fetchSummary().then(data => {
+      if (data?.metrics) setSummaryMetrics(data.metrics);
+      if (data?.channelBreakdown) setChannelBreakdown(data.channelBreakdown);
+      if (data?.dailyChartData)   setDailyChartData(data.dailyChartData);
+    });
+  }, []);
 
   const handleExport = async (type) => {
     setShowExportMenu(false);
@@ -55,8 +67,8 @@ const SummaryDashboard = () => {
   };
 
   const deliveryRate     = summaryMetrics.deliverySuccessRate;
-  const eligibilityRate  = Math.round(summaryMetrics.eligibleMembers / summaryMetrics.totalMembers * 100);
-  const failureRate      = Math.round(summaryMetrics.failedCount / summaryMetrics.notificationsSent * 100);
+  const eligibilityRate  = Math.round((summaryMetrics.eligibleMembers / summaryMetrics.totalMembers) * 100) || 0;
+  const failureRate      = Math.round((summaryMetrics.failedCount / summaryMetrics.notificationsSent) * 100) || 0;
 
   // ── Donut data ─────────────────────────────────────────────────────────────
   const donutData = [
