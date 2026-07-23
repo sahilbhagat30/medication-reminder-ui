@@ -143,6 +143,16 @@
 }
 
 .check-label { font-weight: 600; font-size: 0.88rem; color: var(--text-primary); }
+.check-label-row { display: flex; align-items: center; gap: 0.5rem; }
+.check-rule-code {
+  font-family: monospace;
+  font-size: 0.75rem;
+  background: var(--bg-main);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
 .check-detail { font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.1rem; }
 .check-text { display: flex; flex-direction: column; flex: 1; }
 
@@ -168,40 +178,59 @@
 .elig-conclusion.success { background: var(--status-bg-success); color: var(--status-success); border: 1px solid #A7F3D0; }
 .elig-conclusion.fail    { background: var(--status-bg-failed);  color: var(--status-failed);  border: 1px solid #FECACA; }
 
-/* Stat cards */
-.elig-stat-card {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+/* ── Masked channel badge ── */
+.elig-channel-masked {
+  font-family: 'Courier New', monospace;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  background: var(--aetna-purple-light);
+  color: var(--aetna-purple);
+  padding: 0.15rem 0.55rem;
+  border-radius: 12px;
 }
 
-.elig-stat-icon {
-  width: 46px;
-  height: 46px;
-  border-radius: var(--radius-sm);
+/* ── Expand icon button (no text) ── */
+.elig-expand-icon-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+  border-radius: var(--radius-sm);
 }
 
-.elig-stat-label { font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 0.15rem; }
-.elig-stat-value { font-size: 1.5rem; font-weight: 800; color: var(--text-primary); }
+/* ── Rules score badge in expanded header ── */
+.elig-rules-score-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.6rem;
+  border-radius: 12px;
+  margin-left: auto;
+}
 
-/* Filter row */
-.elig-filter-row {
+.elig-criteria-title {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 1.25rem;
-  flex-wrap: wrap;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
 }
 
-.elig-filter-label {
-  font-size: 0.83rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  margin-right: 0.25rem;
+/* ── Deadline urgency ── */
+.deadline-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.deadline-urgent {
+  color: var(--status-failed);
+  font-weight: 700;
 }
 
 .filter-tab {

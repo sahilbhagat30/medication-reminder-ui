@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { prescriptions } from '../data/mockData';
 import {
   Pill, Store, Calendar, CheckCircle2, Clock, ArrowRight,
-  Search, ChevronLeft, ChevronRight, ChevronsUpDown, ChevronUp, ChevronDown
+  Search, ChevronLeft, ChevronRight, ChevronsUpDown, ChevronUp, ChevronDown, Download
 } from 'lucide-react';
+import { exportToCSV } from '../utils/exportUtils';
 import './PrescriptionDashboard.css';
 
 const formatDate = (dateStr) => {
@@ -18,6 +19,18 @@ const formatTimestamp = () => {
     month: 'short', day: 'numeric', year: 'numeric',
     hour: '2-digit', minute: '2-digit', timeZoneName: 'short',
   });
+};
+
+// Helper to mask drug name (e.g., Atorvastatin -> At****in, Eliquis -> El****is)
+const maskText = (str) => {
+  if (!str) return '—';
+  const words = str.split(' ');
+  return words.map(w => {
+    if (w.length <= 3) return w[0] + '*'.repeat(Math.max(1, w.length - 1));
+    const start = w.slice(0, 2);
+    const end = w.slice(-2);
+    return `${start}****${end}`;
+  }).join(' ');
 };
 
 // All pickup_status categories
@@ -41,11 +54,16 @@ const PICKUP_STATUS_BADGE = {
 const PAGE_SIZE = 15;
 
 // Sortable column header
-const SortHeader = ({ label, field, sortField, sortDir, onSort }) => {
+const SortHeader = ({ label, field, sortField, sortDir, onSort, align }) => {
   const active = sortField === field;
+  const isCenter = align === 'center';
   return (
-    <th className="sortable-th" onClick={() => onSort(field)}>
-      <span className="sort-th-inner">
+    <th 
+      className="sortable-th" 
+      onClick={() => onSort(field)}
+      style={{ textAlign: isCenter ? 'center' : 'left' }}
+    >
+      <span className="sort-th-inner" style={{ justifyContent: isCenter ? 'center' : 'flex-start' }}>
         {label}
         <span className="sort-icons">
           {active ? (
@@ -114,6 +132,18 @@ const PrescriptionDashboard = () => {
     setPage(1);
   };
 
+  const handleExportCSV = () => {
+    exportToCSV('Prescriptions', filtered, [
+      { header: 'Rx ID',           key: 'id' },
+      { header: 'Member ID',       key: 'memberId' },
+      { header: 'Member Name',     key: 'memberName' },
+      { header: 'Pickup Status',   key: 'pickupStatus' },
+      { header: 'Pickup Deadline', key: 'pickupDeadline' },
+      { header: 'Store',           key: 'store' },
+      { header: 'Ready',           key: 'readyForPickup' },
+    ]);
+  };
+
   return (
     <div className="page fade-in-up">
       {/* Header */}
@@ -129,12 +159,17 @@ const PrescriptionDashboard = () => {
             <Clock size={12} /> Snapshot as of <strong>{snapshotTime}</strong>
           </div>
         </div>
-        <button className="btn btn-primary" onClick={() => navigate('/eligibility')}>
-          Review Eligibility <ArrowRight size={15} />
-        </button>
+        <div className="flex gap-2">
+          <button className="btn btn-outline" onClick={handleExportCSV}>
+            <Download size={15} /> Export CSV
+          </button>
+          <button className="btn btn-primary" onClick={() => navigate('/eligibility')}>
+            Review Eligibility <ArrowRight size={15} />
+          </button>
+        </div>
       </div>
 
-      {/* KPI Status Cards — 5 clickable cards */}
+      {/* KPI Status Cards — matching Campaign Preview card height & design */}
       <div className="rx-kpi-cards">
         {STATUS_FILTERS.map(status => {
           const cfg = STATUS_CARD_CONFIG[status];
@@ -143,27 +178,26 @@ const PrescriptionDashboard = () => {
           return (
             <div
               key={status}
-              className={`rx-kpi-card ${cfg.cls} ${isActive ? 'rx-kpi-active' : ''}`}
+              className={`rx-kpi-card card ${isActive ? 'rx-kpi-active' : ''}`}
               style={{ '--kpi-border': cfg.borderColor }}
               onClick={() => handleStatusFilter(status)}
               role="button"
               tabIndex={0}
               onKeyDown={e => e.key === 'Enter' && handleStatusFilter(status)}
             >
-              <div className="rx-kpi-icon-wrap">
-                <Icon size={18} style={{ color: cfg.borderColor }} />
+              <div className="rx-kpi-label" style={{ color: cfg.borderColor }}>
+                <Icon size={14} /> {status}
               </div>
               <div className="rx-kpi-count" style={{ color: cfg.borderColor }}>
                 {kpiCounts[status]}
               </div>
-              <div className="rx-kpi-label">{status}</div>
               {isActive && <div className="rx-kpi-active-bar" style={{ background: cfg.borderColor }} />}
             </div>
           );
         })}
       </div>
 
-      {/* Search only (no filter tabs) */}
+      {/* Search Bar */}
       <div className="rx-search-row">
         <div className="filter-search-box">
           <Search size={15} className="filter-search-icon" />
@@ -175,10 +209,6 @@ const PrescriptionDashboard = () => {
             className="filter-search-input"
           />
         </div>
-        <span className="filter-info">
-          {filtered.length} record{filtered.length !== 1 ? 's' : ''}
-          {statusFilter !== 'All' && <> — filtered by <strong>{statusFilter}</strong></>}
-        </span>
       </div>
 
       {/* Table */}
@@ -218,9 +248,9 @@ const PrescriptionDashboard = () => {
                     <td>
                       <div className="drug-cell">
                         <Pill size={14} style={{ color: 'var(--aetna-purple)', flexShrink: 0 }} />
-                        <div>
-                          <div className="drug-name">{rx.drugName}</div>
-                          <div className="drug-strength-pill">{rx.drugStrength}</div>
+                        <div className="drug-container-pill">
+                          <span className="drug-name">{maskText(rx.drugName)}</span>
+                          <span className="drug-strength-pill">{rx.drugStrength}</span>
                         </div>
                       </div>
                     </td>

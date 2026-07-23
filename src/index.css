@@ -460,3 +460,13 @@ td {
   outline: none;
 }
 .elig-search:focus { border-color: var(--border-focus); }
+
+/* Center alignment utility */
+.text-center {
+  text-align: center !important;
+}
+.text-center > * {
+  margin-left: auto;
+  margin-right: auto;
+}
+

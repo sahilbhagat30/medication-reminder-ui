@@ -6,7 +6,6 @@ import {
   MessageSquare,
   BarChart3,
 } from 'lucide-react';
-import { prescriptions, summaryMetrics } from '../data/mockData';
 import './Sidebar.css';
 
 const navItems = [
@@ -15,30 +14,6 @@ const navItems = [
   { path: '/campaign',      label: 'Campaign',       icon: Megaphone },
   { path: '/communication', label: 'Communication',  icon: MessageSquare },
   { path: '/summary',       label: 'Summary',        icon: BarChart3 },
-];
-
-// Derive persistent KPI counts from real data
-const kpiStats = [
-  {
-    label: 'Total Rx',
-    value: prescriptions.length,
-    color: 'var(--aetna-purple)',
-  },
-  {
-    label: 'Ready',
-    value: prescriptions.filter(r => r.readyForPickup).length,
-    color: '#0A8754',
-  },
-  {
-    label: 'Notified',
-    value: summaryMetrics.notificationsSent,
-    color: '#2563EB',
-  },
-  {
-    label: 'Delivered',
-    value: summaryMetrics.deliveredCount,
-    color: '#D97706',
-  },
 ];
 
 const Sidebar = () => {
@@ -60,8 +35,6 @@ const Sidebar = () => {
         </div>
       </div>
 
-      <div className="sidebar-section-label">USER FLOW</div>
-
       <nav className="sidebar-nav">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -79,19 +52,6 @@ const Sidebar = () => {
           );
         })}
       </nav>
-
-      {/* Persistent KPI Stats */}
-      <div className="sidebar-kpi-block">
-        <div className="sidebar-kpi-title">PLATFORM KPIs</div>
-        <div className="sidebar-kpi-grid">
-          {kpiStats.map(k => (
-            <div className="sidebar-kpi-item" key={k.label}>
-              <span className="sidebar-kpi-val" style={{ color: k.color }}>{k.value.toLocaleString()}</span>
-              <span className="sidebar-kpi-label">{k.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
 
       <div className="sidebar-footer">
         <div className="sidebar-footer-info">

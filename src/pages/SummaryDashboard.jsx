@@ -1,63 +1,24 @@
+import { useMemo, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  summaryMetrics, channelBreakdown, dailyChartData
-} from '../data/mockData';
+import { summaryMetrics, channelBreakdown, dailyChartData } from '../data/mockData';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, Legend
+  Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell
 } from 'recharts';
 import {
   BarChart3, Pill, Users, Send, TrendingUp, AlertCircle,
   Clock, CheckCircle2, ArrowLeft, Download, RefreshCw,
-  MessageSquare, Mail, Bell, XCircle
+  MessageSquare, Mail, Bell, XCircle, Activity, Image, FileText
 } from 'lucide-react';
+import { exportElementAsPDF, exportElementAsPNG } from '../utils/exportUtils';
 import './SummaryDashboard.css';
 
-const KPICard = ({ title, value, sub, icon: Icon, color, bg, trend }) => (
-  <div className="kpi-card card">
-    <div className="kpi-header">
-      <div className="kpi-icon" style={{ background: bg, color }}>
-        <Icon size={22} />
-      </div>
-      {trend !== undefined && (
-        <span className={`kpi-trend ${trend > 0 ? 'up' : trend < 0 ? 'down' : 'neutral'}`}>
-          <TrendingUp size={12} />
-          {trend > 0 ? '+' : ''}{trend}%
-        </span>
-      )}
-    </div>
-    <div className="kpi-value">{value}</div>
-    <div className="kpi-title">{title}</div>
-    {sub && <div className="kpi-sub">{sub}</div>}
-  </div>
-);
-
-const ChannelCard = ({ data }) => {
-  const successRate = data.sent > 0 ? Math.round((data.delivered / data.sent) * 100) : 0;
-  const channelIcons = { SMS: MessageSquare, Email: Mail, Push: Bell };
-  const Icon = channelIcons[data.channel] || MessageSquare;
-
-  return (
-    <div className="channel-card card">
-      <div className="channel-card-header">
-        <div className="channel-icon-badge">
-          <Icon size={18} />
-        </div>
-        <div>
-          <div className="channel-name">{data.channel}</div>
-          <div className="channel-sent">{data.sent.toLocaleString()} sent</div>
-        </div>
-        <span className="channel-rate">{successRate}%</span>
-      </div>
-      <div className="channel-bar-track">
-        <div className="channel-bar-fill" style={{ width: `${successRate}%` }} />
-      </div>
-      <div className="channel-detail-row">
-        <span className="channel-detail success"><CheckCircle2 size={11} /> {data.delivered.toLocaleString()} delivered</span>
-        <span className="channel-detail failed"><AlertCircle size={11} /> {data.failed.toLocaleString()} failed</span>
-      </div>
-    </div>
-  );
+const formatTimestamp = () => {
+  const now = new Date();
+  return now.toLocaleString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', timeZoneName: 'short',
+  });
 };
 
 const CustomTooltip = ({ active, payload, label }) => {
@@ -78,64 +39,49 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 const SummaryDashboard = () => {
   const navigate = useNavigate();
+  const snapshotTime   = useMemo(() => formatTimestamp(), []);
+  const [exporting, setExporting] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
 
-  // Derived real metrics from Excel data
-  const deliveryRate = summaryMetrics.deliverySuccessRate;
-  const eligibilityRate = Math.round(summaryMetrics.eligibleMembers / summaryMetrics.totalMembers * 100);
+  const handleExport = async (type) => {
+    setShowExportMenu(false);
+    setExporting(true);
+    try {
+      if (type === 'pdf') await exportElementAsPDF('summary-dashboard-content', 'Aetna_Summary_Dashboard');
+      if (type === 'png') await exportElementAsPNG('summary-dashboard-content', 'Aetna_Summary_Dashboard');
+    } finally {
+      setExporting(false);
+    }
+  };
 
-  const kpis = [
-    {
-      title: 'Total Prescriptions',
-      value: summaryMetrics.totalPrescriptions.toLocaleString(),
-      sub: `${summaryMetrics.pendingPickups.toLocaleString()} pending pickup`,
-      icon: Pill, color: 'var(--aetna-purple)', bg: 'var(--aetna-purple-light)', trend: undefined,
-    },
-    {
-      title: 'Total Members',
-      value: summaryMetrics.totalMembers.toLocaleString(),
-      sub: `${summaryMetrics.eligibleMembers} eligible (${eligibilityRate}%)`,
-      icon: Users, color: '#059669', bg: '#ECFDF5', trend: undefined,
-    },
-    {
-      title: 'Notifications Sent',
-      value: summaryMetrics.notificationsSent.toLocaleString(),
-      sub: `${summaryMetrics.failedCount} failed · ${summaryMetrics.sentCount} awaiting confirmation`,
-      icon: Send, color: 'var(--status-sent)', bg: '#EFF6FF', trend: undefined,
-    },
-    {
-      title: 'Delivery Success Rate',
-      value: `${deliveryRate}%`,
-      sub: `${summaryMetrics.deliveredCount} delivered of ${summaryMetrics.notificationsSent} sent`,
-      icon: TrendingUp, color: '#D97706', bg: '#FFFBEB', trend: undefined,
-    },
-    {
-      title: 'Active Campaigns',
-      value: summaryMetrics.activeCampaigns.toLocaleString(),
-      sub: 'Running across all channels',
-      icon: Bell, color: 'var(--aetna-magenta)', bg: 'var(--aetna-magenta-light)', trend: undefined,
-    },
-    {
-      title: 'Avg Response Time',
-      value: summaryMetrics.avgResponseTime,
-      sub: 'From send to member action',
-      icon: Clock, color: '#7C3AED', bg: '#F5F3FF', trend: undefined,
-    },
+  const deliveryRate     = summaryMetrics.deliverySuccessRate;
+  const eligibilityRate  = Math.round(summaryMetrics.eligibleMembers / summaryMetrics.totalMembers * 100);
+  const failureRate      = Math.round(summaryMetrics.failedCount / summaryMetrics.notificationsSent * 100);
+
+  // ── Donut data ─────────────────────────────────────────────────────────────
+  const donutData = [
+    { name: 'Delivered',      value: summaryMetrics.deliveredCount, color: '#059669' },
+    { name: 'Sent (Pending)', value: summaryMetrics.sentCount,      color: '#3B82F6' },
+    { name: 'Failed',         value: summaryMetrics.failedCount,    color: '#EF4444' },
   ];
 
-  // Delivery breakdown for quick visual
-  const deliveryBreakdown = [
-    { label: 'Delivered', count: summaryMetrics.deliveredCount, color: 'var(--status-success)', icon: CheckCircle2 },
-    { label: 'Sent (Awaiting)', count: summaryMetrics.sentCount, color: 'var(--status-sent)', icon: Send },
-    { label: 'Failed', count: summaryMetrics.failedCount, color: 'var(--status-failed)', icon: XCircle },
-  ];
+  // ── Channel icons lookup ───────────────────────────────────────────────────
+  const channelMeta = {
+    SMS:   { icon: MessageSquare, color: '#7C3AED', bg: '#F5F3FF' },
+    Email: { icon: Mail,          color: '#059669', bg: '#ECFDF5' },
+    Push:  { icon: Bell,          color: '#D97706', bg: '#FFFBEB' },
+  };
 
   return (
-    <div className="page fade-in-up">
-      {/* Header */}
+    <div className="page fade-in-up" id="summary-dashboard-content">
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="page-header-row">
         <div className="page-header">
           <h1><BarChart3 size={24} style={{ color: 'var(--aetna-purple)' }} /> Summary Dashboard</h1>
-          <p>Complete overview of the medication reminder platform — metrics derived from real Excel dataset (150 prescriptions, 100 members, 70 notifications).</p>
+          <p>Executive analytics for the Aetna Medication Reminder Platform — delivery rates, channel performance, and prescription pickup metrics.</p>
+          <div className="snapshot-label">
+            <Clock size={12} /> Snapshot as of <strong>{snapshotTime}</strong>
+          </div>
         </div>
         <div className="flex gap-2">
           <button className="btn btn-outline" onClick={() => navigate('/communication')}>
@@ -144,114 +90,225 @@ const SummaryDashboard = () => {
           <button className="btn btn-outline">
             <RefreshCw size={15} /> Refresh
           </button>
-          <button className="btn btn-primary">
-            <Download size={15} /> Export Report
-          </button>
-        </div>
-      </div>
-
-      {/* KPI Grid */}
-      <div className="kpi-grid">
-        {kpis.map((kpi, i) => <KPICard key={i} {...kpi} />)}
-      </div>
-
-      {/* Delivery Status Breakdown */}
-      <div className="delivery-breakdown-row">
-        {deliveryBreakdown.map(({ label, count, color, icon: Icon }) => (
-          <div key={label} className="delivery-stat-pill card">
-            <Icon size={18} style={{ color }} />
-            <div className="delivery-stat-count" style={{ color }}>{count}</div>
-            <div className="delivery-stat-label">{label}</div>
+          <div className="export-dropdown-wrapper">
+            <button
+              className="btn btn-primary"
+              onClick={() => setShowExportMenu(v => !v)}
+              disabled={exporting}
+            >
+              <Download size={15} /> {exporting ? 'Exporting…' : 'Export'}
+            </button>
+            {showExportMenu && (
+              <div className="export-dropdown-menu">
+                <button className="export-dropdown-item" onClick={() => handleExport('pdf')}>
+                  <FileText size={14} /> Download as PDF
+                </button>
+                <button className="export-dropdown-item" onClick={() => handleExport('png')}>
+                  <Image size={14} /> Download as PNG
+                </button>
+              </div>
+            )}
           </div>
-        ))}
-        <div className="delivery-stat-pill card">
-          <TrendingUp size={18} style={{ color: '#D97706' }} />
-          <div className="delivery-stat-count" style={{ color: '#D97706' }}>{deliveryRate}%</div>
-          <div className="delivery-stat-label">Success Rate</div>
         </div>
       </div>
 
-      {/* Charts */}
-      <div className="summary-charts-grid">
+      {/* ── Row 1: 4 Headline KPI Cards ──────────────────────────────────── */}
+      <div className="sum-kpi-row">
+        <div className="sum-kpi-card card">
+          <div className="sum-kpi-icon" style={{ background: 'var(--aetna-purple-light)', color: 'var(--aetna-purple)' }}>
+            <Pill size={20} />
+          </div>
+          <div className="sum-kpi-body">
+            <div className="sum-kpi-value" style={{ color: 'var(--aetna-purple)' }}>{summaryMetrics.totalPrescriptions.toLocaleString()}</div>
+            <div className="sum-kpi-label">Total Prescriptions</div>
+            <div className="sum-kpi-sub">{summaryMetrics.pendingPickups} pending pickup</div>
+          </div>
+        </div>
+        <div className="sum-kpi-card card">
+          <div className="sum-kpi-icon" style={{ background: '#ECFDF5', color: '#059669' }}>
+            <Users size={20} />
+          </div>
+          <div className="sum-kpi-body">
+            <div className="sum-kpi-value" style={{ color: '#059669' }}>{summaryMetrics.totalMembers.toLocaleString()}</div>
+            <div className="sum-kpi-label">Total Members</div>
+            <div className="sum-kpi-sub">{summaryMetrics.eligibleMembers} eligible ({eligibilityRate}%)</div>
+          </div>
+        </div>
+        <div className="sum-kpi-card card">
+          <div className="sum-kpi-icon" style={{ background: '#EFF6FF', color: '#3B82F6' }}>
+            <Send size={20} />
+          </div>
+          <div className="sum-kpi-body">
+            <div className="sum-kpi-value" style={{ color: '#3B82F6' }}>{summaryMetrics.notificationsSent.toLocaleString()}</div>
+            <div className="sum-kpi-label">Notifications Sent</div>
+            <div className="sum-kpi-sub">{summaryMetrics.deliveredCount} delivered · {summaryMetrics.failedCount} failed</div>
+          </div>
+        </div>
+        <div className="sum-kpi-card card">
+          <div className="sum-kpi-icon" style={{ background: '#FFFBEB', color: '#D97706' }}>
+            <TrendingUp size={20} />
+          </div>
+          <div className="sum-kpi-body">
+            <div className="sum-kpi-value" style={{ color: '#D97706' }}>{deliveryRate}%</div>
+            <div className="sum-kpi-label">Delivery Success Rate</div>
+            <div className="sum-kpi-sub">{failureRate}% failure rate</div>
+          </div>
+        </div>
+        <div className="sum-kpi-card card">
+          <div className="sum-kpi-icon" style={{ background: 'var(--aetna-magenta-light)', color: 'var(--aetna-magenta)' }}>
+            <Bell size={20} />
+          </div>
+          <div className="sum-kpi-body">
+            <div className="sum-kpi-value" style={{ color: 'var(--aetna-magenta)' }}>{summaryMetrics.activeCampaigns}</div>
+            <div className="sum-kpi-label">Active Campaigns</div>
+            <div className="sum-kpi-sub">Across all channels</div>
+          </div>
+        </div>
+        <div className="sum-kpi-card card">
+          <div className="sum-kpi-icon" style={{ background: '#F5F3FF', color: '#7C3AED' }}>
+            <Clock size={20} />
+          </div>
+          <div className="sum-kpi-body">
+            <div className="sum-kpi-value" style={{ color: '#7C3AED' }}>{summaryMetrics.avgResponseTime}</div>
+            <div className="sum-kpi-label">Avg Response Time</div>
+            <div className="sum-kpi-sub">From send to action</div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Row 2: Area Chart (wide) + Donut (narrow) ────────────────────── */}
+      <div className="sum-charts-row">
         {/* Area Chart */}
-        <div className="card chart-card">
-          <div className="chart-header">
-            <h3>Notification Volume by Channel (7-Day)</h3>
-            <span className="text-muted">Daily breakdown — SMS: {summaryMetrics.notificationsSent - 11} · Email: 11</span>
+        <div className="card sum-area-card">
+          <div className="sum-chart-header">
+            <div>
+              <h3>Notification Volume by Channel</h3>
+              <span className="text-muted">7-day daily breakdown across SMS &amp; Email</span>
+            </div>
+            <div className="sum-legend-pills">
+              <span className="sum-legend-pill" style={{ '--c': 'var(--aetna-purple)' }}>SMS</span>
+              <span className="sum-legend-pill" style={{ '--c': 'var(--aetna-magenta)' }}>Email</span>
+            </div>
           </div>
-          <div className="chart-body">
+          <div className="sum-chart-body">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={dailyChartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="gradSMS"   x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="var(--aetna-purple)"  stopOpacity={0.35}/>
+                  <linearGradient id="gradSMS" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%"  stopColor="var(--aetna-purple)"  stopOpacity={0.3}/>
                     <stop offset="95%" stopColor="var(--aetna-purple)"  stopOpacity={0.02}/>
                   </linearGradient>
                   <linearGradient id="gradEmail" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="var(--aetna-magenta)" stopOpacity={0.35}/>
+                    <stop offset="5%"  stopColor="var(--aetna-magenta)" stopOpacity={0.3}/>
                     <stop offset="95%" stopColor="var(--aetna-magenta)" stopOpacity={0.02}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} />
                 <Tooltip content={<CustomTooltip />} />
-                <Legend wrapperStyle={{ fontSize: '0.82rem', paddingTop: '1rem' }} />
-                <Area type="monotone" dataKey="SMS"   stroke="var(--aetna-purple)"  fill="url(#gradSMS)"   strokeWidth={2} />
-                <Area type="monotone" dataKey="Email" stroke="var(--aetna-magenta)" fill="url(#gradEmail)" strokeWidth={2} />
+                <Area type="monotone" dataKey="SMS"   stroke="var(--aetna-purple)"  fill="url(#gradSMS)"   strokeWidth={2.5} dot={false} />
+                <Area type="monotone" dataKey="Email" stroke="var(--aetna-magenta)" fill="url(#gradEmail)" strokeWidth={2.5} dot={false} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Bar Chart */}
-        <div className="card chart-card">
-          <div className="chart-header">
-            <h3>Delivery Success by Channel</h3>
-            <span className="text-muted">Sent vs. Delivered vs. Failed — from Notification_Output (70 records)</span>
+        {/* Donut chart */}
+        <div className="card sum-donut-card">
+          <div className="sum-chart-header">
+            <div>
+              <h3>Delivery Breakdown</h3>
+              <span className="text-muted">{summaryMetrics.notificationsSent} total notifications</span>
+            </div>
           </div>
-          <div className="chart-body">
+          <div className="sum-donut-body">
+            <ResponsiveContainer width="100%" height={180}>
+              <PieChart>
+                <Pie
+                  data={donutData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={52}
+                  outerRadius={80}
+                  paddingAngle={3}
+                  dataKey="value"
+                >
+                  {donutData.map((entry, i) => (
+                    <Cell key={i} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(val, name) => [val.toLocaleString(), name]} />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="sum-donut-legend">
+              {donutData.map(d => (
+                <div key={d.name} className="sum-donut-legend-item">
+                  <span className="sum-donut-dot" style={{ background: d.color }} />
+                  <span className="sum-donut-name">{d.name}</span>
+                  <span className="sum-donut-val" style={{ color: d.color }}>{d.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Row 3: Bar Chart + Channel Performance Cards ─────────────────── */}
+      <div className="sum-bottom-row">
+        {/* Bar chart */}
+        <div className="card sum-bar-card">
+          <div className="sum-chart-header">
+            <div>
+              <h3>Channel Delivery Comparison</h3>
+              <span className="text-muted">Sent vs. Delivered vs. Failed per channel</span>
+            </div>
+          </div>
+          <div className="sum-chart-body">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={channelBreakdown} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                <XAxis dataKey="channel" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="channel" tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} />
                 <Tooltip content={<CustomTooltip />} />
-                <Legend wrapperStyle={{ fontSize: '0.82rem', paddingTop: '1rem' }} />
+                <Legend wrapperStyle={{ fontSize: '0.78rem', paddingTop: '0.75rem' }} />
                 <Bar dataKey="sent"      fill="var(--aetna-purple)"  radius={[4,4,0,0]} />
-                <Bar dataKey="delivered" fill="var(--status-success)" radius={[4,4,0,0]} />
-                <Bar dataKey="failed"    fill="var(--status-failed)"  radius={[4,4,0,0]} />
+                <Bar dataKey="delivered" fill="#059669"              radius={[4,4,0,0]} />
+                <Bar dataKey="failed"    fill="#EF4444"              radius={[4,4,0,0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
-      </div>
 
-      {/* Channel breakdown cards */}
-      <div className="channel-breakdown-section">
-        <h3 className="section-title">Channel Performance Breakdown</h3>
-        <div className="grid-3">
-          {channelBreakdown.filter(c => c.sent > 0).map(ch => <ChannelCard key={ch.channel} data={ch} />)}
-        </div>
-      </div>
-
-      {/* Flow Complete Banner */}
-      <div className="flow-complete-banner card">
-        <div className="flow-banner-left">
-          <CheckCircle2 size={32} style={{ color: 'var(--status-success)' }} />
-          <div>
-            <h3 style={{ color: 'var(--status-success)' }}>End-to-End Flow Complete</h3>
-            <p>All 5 screens of the Medication Reminder Platform demonstrated with real data from the provided Excel dataset.</p>
-          </div>
-        </div>
-        <div className="flow-steps-mini">
-          {['Prescription', 'Eligibility', 'Campaign', 'Communication', 'Summary'].map((step, i) => (
-            <div key={i} className="flow-step-mini">
-              <div className="flow-step-dot" />
-              <span>{step}</span>
-              {i < 4 && <div className="flow-step-line" />}
-            </div>
-          ))}
+        {/* Channel performance stack */}
+        <div className="sum-channel-stack">
+          <h3 className="sum-section-title"><Activity size={16} /> Channel Performance</h3>
+          {channelBreakdown.filter(c => c.sent > 0).map(data => {
+            const rate  = data.sent > 0 ? Math.round((data.delivered / data.sent) * 100) : 0;
+            const meta  = channelMeta[data.channel] || channelMeta.SMS;
+            const Icon  = meta.icon;
+            return (
+              <div key={data.channel} className="card sum-channel-card">
+                <div className="sum-channel-top">
+                  <div className="sum-channel-icon" style={{ background: meta.bg, color: meta.color }}>
+                    <Icon size={16} />
+                  </div>
+                  <div className="sum-channel-info">
+                    <span className="sum-channel-name">{data.channel}</span>
+                    <span className="sum-channel-sent">{data.sent} sent</span>
+                  </div>
+                  <span className="sum-channel-rate" style={{ color: meta.color }}>{rate}%</span>
+                </div>
+                <div className="sum-channel-track">
+                  <div className="sum-channel-fill" style={{ width: `${rate}%`, background: meta.color }} />
+                </div>
+                <div className="sum-channel-stats">
+                  <span style={{ color: '#059669' }}><CheckCircle2 size={11} /> {data.delivered} delivered</span>
+                  <span style={{ color: '#EF4444' }}><XCircle size={11} /> {data.failed} failed</span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

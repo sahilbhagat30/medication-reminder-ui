@@ -7,10 +7,31 @@ import {
 } from 'lucide-react';
 import './CampaignPreview.css';
 
+const formatTimestamp = () => {
+  const now = new Date();
+  return now.toLocaleString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', timeZoneName: 'short',
+  });
+};
+const snapshotTime = formatTimestamp();
+
 const channelConfig = {
   'SMS':   { icon: MessageSquare, color: '#2563EB', bg: '#EFF6FF', label: 'SMS Text Message' },
   'Email': { icon: Mail,          color: '#059669', bg: '#ECFDF5', label: 'Email Notification' },
   'Push':  { icon: Bell,          color: '#7C3AED', bg: '#F5F3FF', label: 'Push Notification' },
+};
+
+// Helper to mask drug name
+const maskText = (str) => {
+  if (!str) return '—';
+  const words = str.split(' ');
+  return words.map(w => {
+    if (w.length <= 3) return w[0] + '*'.repeat(Math.max(1, w.length - 1));
+    const start = w.slice(0, 2);
+    const end = w.slice(-2);
+    return `${start}****${end}`;
+  }).join(' ');
 };
 
 const CAMPAIGN_STATUS_CFG = {
@@ -47,7 +68,7 @@ const CampaignCard = ({ campaign, onSend }) => {
           <div className="campaign-member-name">{campaign.memberName}</div>
           <div className="campaign-member-sub">
             <User size={11} /> {campaign.memberId} &nbsp;·&nbsp;
-            <Pill size={11} /> {campaign.drug}
+            <Pill size={11} /> {maskText(campaign.drug)}
           </div>
         </div>
       </div>
@@ -161,6 +182,9 @@ const CampaignPreview = () => {
         <div className="page-header">
           <h1><Megaphone size={24} style={{ color: 'var(--aetna-purple)' }} /> Campaign Preview</h1>
           <p>Review and dispatch notification campaigns for eligible members across SMS, Email, and Push channels.</p>
+          <div className="snapshot-label">
+            <Clock size={12} /> Snapshot as of <strong>{snapshotTime}</strong>
+          </div>
         </div>
         <div className="flex gap-2">
           <button className="btn btn-outline" onClick={() => navigate('/eligibility')}>
@@ -176,47 +200,45 @@ const CampaignPreview = () => {
       </div>
 
       {/* Campaign Stats */}
-      <div className="campaign-stats-row">
-        <div className="camp-stat-card card">
-          <div className="camp-stat-label">Total Campaigns</div>
-          <div className="camp-stat-value">{campaignList.length}</div>
+      <div className="rx-kpi-cards">
+        <div
+          className={`rx-kpi-card card ${channelFilter === 'all' ? 'rx-kpi-active' : ''}`}
+          onClick={() => { setChannelFilter('all'); setPage(1); }}
+          style={{ '--kpi-border': 'var(--aetna-purple)' }}
+          role="button" tabIndex={0}
+        >
+          <div className="rx-kpi-label" style={{ color: 'var(--aetna-purple)' }}>Total Campaigns</div>
+          <div className="rx-kpi-count" style={{ color: 'var(--aetna-purple)' }}>{campaignList.length}</div>
+          {channelFilter === 'all' && <div className="rx-kpi-active-bar" style={{ background: 'var(--aetna-purple)' }} />}
         </div>
-        <div className="camp-stat-card card">
-          <div className="camp-stat-label">Sent</div>
-          <div className="camp-stat-value" style={{ color: 'var(--status-success)' }}>{sentCount}</div>
+        <div className="rx-kpi-card card" style={{ '--kpi-border': 'var(--status-success)' }}>
+          <div className="rx-kpi-label" style={{ color: 'var(--status-success)' }}>Sent</div>
+          <div className="rx-kpi-count" style={{ color: 'var(--status-success)' }}>{sentCount}</div>
         </div>
-        <div className="camp-stat-card card">
-          <div className="camp-stat-label">Pending</div>
-          <div className="camp-stat-value" style={{ color: 'var(--status-pending)' }}>{pendingCount}</div>
+        <div className="rx-kpi-card card" style={{ '--kpi-border': 'var(--status-pending)' }}>
+          <div className="rx-kpi-label" style={{ color: 'var(--status-pending)' }}>Pending</div>
+          <div className="rx-kpi-count" style={{ color: 'var(--status-pending)' }}>{pendingCount}</div>
         </div>
         {channelCounts.map(({ ch, count }) => {
           const cfg = channelConfig[ch];
           const Icon = cfg.icon;
+          const isActive = channelFilter === ch;
           return (
-            <div className="camp-stat-card card" key={ch}>
-              <div className="camp-stat-label" style={{ color: cfg.color }}>
-                <Icon size={13} /> {ch}
+            <div
+              key={ch}
+              className={`rx-kpi-card card ${isActive ? 'rx-kpi-active' : ''}`}
+              onClick={() => { setChannelFilter(ch); setPage(1); }}
+              style={{ '--kpi-border': cfg.color }}
+              role="button" tabIndex={0}
+            >
+              <div className="rx-kpi-label" style={{ color: cfg.color }}>
+                <Icon size={14} /> {ch}
               </div>
-              <div className="camp-stat-value">{count}</div>
+              <div className="rx-kpi-count" style={{ color: cfg.color }}>{count}</div>
+              {isActive && <div className="rx-kpi-active-bar" style={{ background: cfg.color }} />}
             </div>
           );
         })}
-      </div>
-
-      {/* Channel Filter */}
-      <div className="campaign-filter-row">
-        {['all', 'SMS', 'Email', 'Push'].map(f => (
-          <button
-            key={f}
-            className={`filter-tab ${channelFilter === f ? 'active' : ''}`}
-            onClick={() => { setChannelFilter(f); setPage(1); }}
-          >
-            {f === 'all' ? 'All Channels' : f}
-          </button>
-        ))}
-        <span style={{ marginLeft: 'auto', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-          {filtered.length} campaigns
-        </span>
       </div>
 
       {/* Campaign Cards Grid */}

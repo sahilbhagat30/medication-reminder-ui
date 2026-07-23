@@ -16,7 +16,7 @@
   padding: 0.2rem 0.75rem;
 }
 
-/* ── KPI Status Cards ───────────────────────────────────────────────── */
+/* ── KPI Status Cards (Matched to Campaign Preview Height) ────────── */
 .rx-kpi-cards {
   display: flex;
   gap: 1rem;
@@ -25,32 +25,29 @@
 }
 
 .rx-kpi-card {
+  min-width: 100px;
+  padding: 0.85rem 1.25rem;
+  text-align: center;
   flex: 1;
-  min-width: 140px;
-  background: var(--bg-card);
-  border: 2px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 1.1rem 1.25rem 1rem;
   cursor: pointer;
   position: relative;
   overflow: hidden;
   transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
-  box-shadow: var(--shadow-sm);
+  align-items: center;
+  justify-content: center;
 }
 
 .rx-kpi-card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
   box-shadow: var(--shadow-md);
-  border-color: var(--kpi-border);
 }
 
 .rx-kpi-active {
   border-color: var(--kpi-border) !important;
   background: color-mix(in srgb, var(--kpi-border) 6%, white);
-  box-shadow: 0 4px 16px color-mix(in srgb, var(--kpi-border) 25%, transparent);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--kpi-border) 25%, transparent);
 }
 
 .rx-kpi-active-bar {
@@ -62,8 +59,17 @@
   border-radius: 0 0 var(--radius-md) var(--radius-md);
 }
 
-.rx-kpi-icon-wrap {
-  margin-bottom: 0.1rem;
+.rx-kpi-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  margin-bottom: 0.3rem;
+  white-space: nowrap;
 }
 
 .rx-kpi-count {
@@ -72,18 +78,11 @@
   line-height: 1;
 }
 
-.rx-kpi-label {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  white-space: nowrap;
-}
-
-/* ── Search row (no filter tabs) ────────────────────────────────────── */
+/* ── Search & Filter row ────────────────────────────────────────────── */
 .rx-search-row {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
   margin-bottom: 1.25rem;
   flex-wrap: wrap;
 }
@@ -171,9 +170,14 @@
 /* ── Drug cell ──────────────────────────────────────────────────────── */
 .drug-cell {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.5rem;
-  padding-top: 0.1rem;
+}
+
+.drug-container-pill {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
 }
 
 .drug-name {
@@ -190,8 +194,8 @@
   font-weight: 600;
   padding: 0.1rem 0.5rem;
   border-radius: 20px;
-  margin-top: 0.2rem;
   border: 1px solid rgba(125,63,152,0.2);
+  width: fit-content;
 }
 
 /* ── Store cell ─────────────────────────────────────────────────────── */

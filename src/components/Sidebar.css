@@ -119,48 +119,6 @@
 
 .nav-icon { flex-shrink: 0; }
 
-/* ── Persistent KPI Block ── */
-.sidebar-kpi-block {
-  margin: 0 0.75rem 0.5rem;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: var(--radius-md);
-  padding: 0.85rem 1rem;
-}
-
-.sidebar-kpi-title {
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  color: rgba(255,255,255,0.35);
-  margin-bottom: 0.65rem;
-  text-transform: uppercase;
-}
-
-.sidebar-kpi-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.6rem;
-}
-
-.sidebar-kpi-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-}
-
-.sidebar-kpi-val {
-  font-size: 1.1rem;
-  font-weight: 800;
-  line-height: 1;
-}
-
-.sidebar-kpi-label {
-  font-size: 0.65rem;
-  color: rgba(255,255,255,0.45);
-  font-weight: 500;
-}
-
 /* ── Footer ── */
 .sidebar-footer {
   padding: 1rem 1.25rem;

@@ -1,225 +1,229 @@
-/* KPI Grid */
-.kpi-grid {
+/* ── Row 1: 6-card KPI strip ──────────────────────────────────────────────── */
+.sum-kpi-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.25rem;
-  margin-bottom: 1.5rem;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.25rem;
 }
+@media (max-width: 1300px) { .sum-kpi-row { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width:  900px) { .sum-kpi-row { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width:  600px) { .sum-kpi-row { grid-template-columns: 1fr; } }
 
-@media (max-width: 1100px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 640px)  { .kpi-grid { grid-template-columns: 1fr; } }
-
-/* KPI Card */
-.kpi-card {
-  padding: 1.25rem 1.5rem;
-  transition: all 0.2s;
-}
-.kpi-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
-
-.kpi-header {
+.sum-kpi-card {
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 0.85rem;
+  gap: 0.85rem;
+  padding: 1rem 1.15rem;
+  transition: transform 0.18s, box-shadow 0.18s;
 }
+.sum-kpi-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
 
-.kpi-icon {
-  width: 46px;
-  height: 46px;
+.sum-kpi-icon {
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
-.kpi-trend {
+.sum-kpi-body { display: flex; flex-direction: column; gap: 0.1rem; }
+.sum-kpi-value { font-size: 1.55rem; font-weight: 800; line-height: 1.1; }
+.sum-kpi-label { font-size: 0.78rem; font-weight: 700; color: var(--text-primary); margin-top: 0.1rem; }
+.sum-kpi-sub   { font-size: 0.7rem; color: var(--text-secondary); }
+
+/* ── Row 2: Area Chart (wide) + Donut (narrow) ──────────────────────────── */
+.sum-charts-row {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+@media (max-width: 1100px) { .sum-charts-row { grid-template-columns: 1fr; } }
+
+.sum-area-card,
+.sum-donut-card {
+  padding: 1.25rem;
+}
+
+.sum-chart-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+.sum-chart-header h3 { font-size: 0.95rem; font-weight: 700; margin: 0 0 0.15rem; }
+
+.sum-chart-body { height: 220px; }
+
+/* legend pills */
+.sum-legend-pills { display: flex; gap: 0.5rem; flex-shrink: 0; }
+.sum-legend-pill {
   font-size: 0.72rem;
   font-weight: 700;
-  padding: 0.2rem 0.55rem;
+  padding: 0.15rem 0.6rem;
   border-radius: 20px;
+  background: color-mix(in srgb, var(--c) 12%, transparent);
+  color: var(--c);
+}
+
+/* Donut */
+.sum-donut-body { display: flex; flex-direction: column; align-items: center; }
+
+.sum-donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  width: 100%;
+  padding: 0 0.5rem;
+  margin-top: 0.5rem;
+}
+.sum-donut-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+}
+.sum-donut-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.sum-donut-name { flex: 1; color: var(--text-secondary); }
+.sum-donut-val  { font-weight: 800; font-size: 0.85rem; }
+
+/* ── Row 3: Bar Chart + Channel Stack ───────────────────────────────────── */
+.sum-bottom-row {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 1.25rem;
+}
+@media (max-width: 1100px) { .sum-bottom-row { grid-template-columns: 1fr; } }
+
+.sum-bar-card {
+  padding: 1.25rem;
+}
+
+.sum-channel-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sum-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 0.15rem;
+}
+
+.sum-channel-card {
+  padding: 0.85rem 1rem;
+  transition: transform 0.15s;
+}
+.sum-channel-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+.sum-channel-top {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.65rem;
+}
+
+.sum-channel-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sum-channel-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  flex: 1;
+}
+.sum-channel-name { font-size: 0.82rem; font-weight: 700; color: var(--text-primary); }
+.sum-channel-sent { font-size: 0.7rem; color: var(--text-secondary); }
+.sum-channel-rate { font-size: 1.1rem; font-weight: 800; flex-shrink: 0; }
+
+.sum-channel-track {
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 0.55rem;
+}
+.sum-channel-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+.sum-channel-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.sum-channel-stats span {
   display: flex;
   align-items: center;
   gap: 0.25rem;
 }
-.kpi-trend.up   { background: var(--status-bg-success); color: var(--status-success); }
-.kpi-trend.down { background: var(--status-bg-failed);  color: var(--status-failed);  }
 
-.kpi-value {
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  line-height: 1;
-  margin-bottom: 0.3rem;
+/* ── Export dropdown ─────────────────────────────────────────────────────── */
+.export-dropdown-wrapper {
+  position: relative;
 }
 
-.kpi-title { font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.2rem; }
-.kpi-sub   { font-size: 0.75rem; color: var(--text-secondary); }
-
-/* Charts Grid */
-.summary-charts-grid {
-  display: grid;
-  grid-template-columns: 3fr 2fr;
-  gap: 1.25rem;
-  margin-bottom: 1.5rem;
+.export-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  min-width: 180px;
+  z-index: 100;
+  overflow: hidden;
 }
 
-@media (max-width: 1100px) { .summary-charts-grid { grid-template-columns: 1fr; } }
-
-.chart-card { padding: 1.25rem; }
-
-.chart-header {
+.export-dropdown-item {
   display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  margin-bottom: 1rem;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.65rem 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: left;
+  transition: background 0.15s;
 }
+.export-dropdown-item:hover { background: var(--aetna-purple-light); color: var(--aetna-purple); }
 
-.chart-header h3 { font-size: 1rem; font-weight: 700; }
-
-.chart-body {
-  height: 240px;
-}
-
-/* Custom tooltip */
+/* ── Custom tooltip ──────────────────────────────────────────────────────── */
 .custom-tooltip {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 0.75rem 1rem;
+  padding: 0.65rem 0.9rem;
   box-shadow: var(--shadow-md);
-  font-size: 0.82rem;
+  font-size: 0.8rem;
 }
-.tooltip-label { font-weight: 700; color: var(--text-primary); margin-bottom: 0.4rem; }
-.tooltip-value { margin-bottom: 0.15rem; }
-
-/* Channel breakdown */
-.channel-breakdown-section {
-  margin-bottom: 1.5rem;
-}
-
-.section-title {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 1rem;
-}
-
-/* Channel card */
-.channel-card {
-  padding: 1rem 1.25rem;
-  transition: all 0.2s;
-}
-.channel-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-
-.channel-card-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.85rem;
-}
-
-.channel-icon-badge {
-  width: 38px;
-  height: 38px;
-  background: var(--aetna-purple-light);
-  color: var(--aetna-purple);
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.channel-name { font-size: 0.92rem; font-weight: 700; color: var(--text-primary); }
-.channel-sent { font-size: 0.75rem; color: var(--text-secondary); }
-
-.channel-rate {
-  margin-left: auto;
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: var(--status-success);
-}
-
-.channel-bar-track {
-  height: 8px;
-  background: var(--border);
-  border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 0.75rem;
-}
-
-.channel-bar-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--aetna-purple), var(--aetna-purple-mid));
-  border-radius: 4px;
-  transition: width 0.6s ease;
-}
-
-.channel-detail-row {
-  display: flex;
-  justify-content: space-between;
-}
-
-.channel-detail {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-.channel-detail.success { color: var(--status-success); }
-.channel-detail.failed  { color: var(--status-failed);  }
-
-/* Flow complete banner */
-.flow-complete-banner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.5rem 2rem;
-  background: linear-gradient(135deg, var(--aetna-purple-light), var(--aetna-magenta-light));
-  border: 1px solid var(--aetna-purple);
-  gap: 2rem;
-  flex-wrap: wrap;
-}
-
-.flow-banner-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.flow-banner-left h3 { font-size: 1.05rem; margin-bottom: 0.2rem; }
-.flow-banner-left p  { font-size: 0.85rem; color: var(--text-secondary); }
-
-.flow-steps-mini {
-  display: flex;
-  align-items: center;
-  gap: 0;
-}
-
-.flow-step-mini {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.flow-step-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--aetna-purple);
-  flex-shrink: 0;
-}
-
-.flow-step-line {
-  width: 30px;
-  height: 2px;
-  background: var(--aetna-purple);
-}
-
-.flow-step-mini span {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--aetna-purple-dark);
-  white-space: nowrap;
-}
+.tooltip-label { font-weight: 700; color: var(--text-primary); margin-bottom: 0.35rem; }
+.tooltip-value { margin-bottom: 0.1rem; }
