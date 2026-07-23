@@ -132,7 +132,7 @@ const CommunicationStatus = () => {
       acc[s] = communicationStatus.filter(r => r.status === s).length;
       return acc;
     }, {});
-  }, []);
+  }, [communicationStatus]);
 
   // Filter + Sort
   const filtered = useMemo(() => {
@@ -147,7 +147,8 @@ const CommunicationStatus = () => {
       return 0;
     });
     return rows;
-  }, [statusFilter, sortField, sortDir]);
+  }, [statusFilter, sortField, sortDir, communicationStatus]);
+
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated  = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);

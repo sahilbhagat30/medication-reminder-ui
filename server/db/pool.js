@@ -10,9 +10,11 @@ const pool = new Pool({
   database: process.env.DB_NAME,
   user:     process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  ssl:      { rejectUnauthorized: false },   // required for Cloud SQL public IP
+  ssl:      { rejectUnauthorized: false },
   max:      10,
-  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 5000,   // Fail fast if DB unreachable (5s)
+  idleTimeoutMillis:       30000,
+  statement_timeout:       10000,  // Kill queries taking > 10s
 });
 
 pool.on('error', (err) => {
