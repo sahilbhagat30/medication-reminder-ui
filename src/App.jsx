@@ -1,11 +1,20 @@
+/**
+ * src/App.jsx
+ *
+ * Root component for the Medication Reminder UI.
+ * Sets up React Router and defines the main layout (Sidebar + Topbar)
+ * wrapping the 5 core dashboard views.
+ */
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Sidebar from './components/Sidebar';
-import Topbar from './components/Topbar';
-import PrescriptionDashboard from './pages/PrescriptionDashboard';
-import EligibilityReview from './pages/EligibilityReview';
-import CampaignPreview from './pages/CampaignPreview';
-import CommunicationStatus from './pages/CommunicationStatus';
-import SummaryDashboard from './pages/SummaryDashboard';
+import { Sidebar, Topbar } from '@/components';
+import {
+  PrescriptionDashboard,
+  EligibilityReview,
+  CampaignPreview,
+  CommunicationStatus,
+  SummaryDashboard,
+} from '@/pages';
+import { ROUTES } from '@/constants/routes';
 import './App.css';
 
 function App() {
@@ -17,11 +26,11 @@ function App() {
           <Topbar />
           <main className="content">
             <Routes>
-              <Route path="/"               element={<PrescriptionDashboard />} />
-              <Route path="/eligibility"    element={<EligibilityReview />} />
-              <Route path="/campaign"       element={<CampaignPreview />} />
-              <Route path="/communication"  element={<CommunicationStatus />} />
-              <Route path="/summary"        element={<SummaryDashboard />} />
+              <Route path={ROUTES.PRESCRIPTION_DASHBOARD} element={<PrescriptionDashboard />} />
+              <Route path={ROUTES.ELIGIBILITY_REVIEW}     element={<EligibilityReview />} />
+              <Route path={ROUTES.CAMPAIGN_PREVIEW}       element={<CampaignPreview />} />
+              <Route path={ROUTES.COMMUNICATION_STATUS}   element={<CommunicationStatus />} />
+              <Route path={ROUTES.SUMMARY_DASHBOARD}      element={<SummaryDashboard />} />
             </Routes>
           </main>
         </div>

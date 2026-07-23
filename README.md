@@ -1,16 +1,60 @@
-# React + Vite
+# Medication Reminder Platform UI
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A production-grade frontend application for the Aetna Medication Reminder system, providing 5 key dashboards for managing prescriptions, evaluating member eligibility, running reminder campaigns, and monitoring communication statuses.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Prescription Dashboard**: View and search pending prescriptions
+- **Eligibility Review**: Check member eligibility and rules Engine results
+- **Campaign Preview**: Schedule and preview communication campaigns
+- **Communication Status**: Real-time delivery logs and analytics
+- **Summary Dashboard**: High-level metrics and aggregated performance
 
-## React Compiler
+## Architecture
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+This project consists of:
+1. **Frontend**: React + Vite (located in `src/`)
+2. **Backend-For-Frontend (BFF)**: Node + Express (located in `server/`)
+3. **Database**: PostgreSQL (schemas in `server/db/`)
 
-## Expanding the Oxlint configuration
+*For architectural diagrams, refer to `docs/architecture/`.*
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## Quick Start
+
+### 1. Frontend Development (Mock Data)
+You can run the frontend completely independently using local mock data.
+```bash
+npm install
+npm run dev
+```
+
+### 2. Full Stack (Live DB)
+To run the full stack with the Express BFF and PostgreSQL:
+
+**Setup BFF & Database**
+```bash
+cd server
+npm install
+cp .env.example .env
+# Fill in your DB credentials in server/.env
+npm run dev
+```
+
+**Connect Frontend to BFF**
+In the root directory, create a `.env.local` file:
+```env
+VITE_API_URL=http://localhost:5001
+```
+Then start the frontend:
+```bash
+npm run dev
+```
+
+## Docker Deployment
+```bash
+docker build -t medication-reminder-ui .
+docker run -p 8080:8080 medication-reminder-ui
+```
+
+## Documentation
+Additional documentation and artifacts are located in `docs/`.
