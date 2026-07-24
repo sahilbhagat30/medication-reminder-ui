@@ -1,60 +1,133 @@
 # Medication Reminder Platform UI
 
-A production-grade frontend application for the Aetna Medication Reminder system, providing 5 key dashboards for managing prescriptions, evaluating member eligibility, running reminder campaigns, and monitoring communication statuses.
+[![React](https://img.shields.io/badge/React-19.2-blue.svg?logo=react)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-8.1-646CFF.svg?logo=vite)](https://vitejs.dev/)
+[![Node.js](https://img.shields.io/badge/Node.js-Express-339933.svg?logo=nodedotjs)](https://nodejs.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16.0-4169E1.svg?logo=postgresql)](https://www.postgresql.org/)
 
-## Features
+A production-grade, full-stack application designed for the **Aetna Medication Reminder System**. This platform empowers administrators and healthcare providers with a suite of intuitive dashboards to manage prescriptions, evaluate member eligibility, coordinate outreach campaigns, and monitor real-time communication delivery.
 
-- **Prescription Dashboard**: View and search pending prescriptions
-- **Eligibility Review**: Check member eligibility and rules Engine results
-- **Campaign Preview**: Schedule and preview communication campaigns
-- **Communication Status**: Real-time delivery logs and analytics
-- **Summary Dashboard**: High-level metrics and aggregated performance
+---
 
-## Architecture
+## ✨ Key Features
 
-This project consists of:
-1. **Frontend**: React + Vite (located in `src/`)
-2. **Backend-For-Frontend (BFF)**: Node + Express (located in `server/`)
-3. **Database**: PostgreSQL (schemas in `server/db/`)
+The application is composed of 5 primary, interconnected workflows:
 
-*For architectural diagrams, refer to `docs/architecture/`.*
+- 💊 **Prescription Dashboard**: A comprehensive view of pending pickups, fulfillment statuses, and member prescription details.
+- 📋 **Eligibility Review**: An intelligent rules-engine interface to determine member communication eligibility, consent status, and preferred channels.
+- 🎯 **Campaign Preview**: A command center for scheduling, previewing, and managing targeted reminder campaigns across SMS, Email, and Push notifications.
+- 📡 **Communication Status**: Real-time telemetry on notification delivery, bounce rates, and message suppression logs.
+- 📊 **Summary Dashboard**: High-level aggregated metrics, success rates, and active campaign analytics at a glance.
 
-## Quick Start
+---
 
-### 1. Frontend Development (Mock Data)
-You can run the frontend completely independently using local mock data.
+## 🏗 Architecture & Tech Stack
+
+This project follows a modern **Backend-For-Frontend (BFF)** architectural pattern.
+
+- **Frontend (`src/`)**: React 19, Vite, React Router DOM, Recharts, Lucide Icons.
+- **Backend/BFF (`server/`)**: Node.js, Express, node-postgres (`pg`), CORS.
+- **Database**: PostgreSQL (Schemas and Seed scripts provided).
+- **Deployment**: Dockerized multi-stage builds optimized for GCP Cloud Run.
+
+*For detailed architectural diagrams, logical data models, and presentation materials, please refer to the `docs/` directory.*
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js (v20+ recommended)
+- PostgreSQL (if running the full stack locally)
+- Docker (optional)
+
+### Option 1: Frontend Development (Mock Data)
+You can run the frontend completely decoupled from the database. It will automatically fallback to comprehensive local mock data.
+
 ```bash
+# Install dependencies
 npm install
+
+# Start the Vite development server
 npm run dev
 ```
 
-### 2. Full Stack (Live DB)
-To run the full stack with the Express BFF and PostgreSQL:
+### Option 2: Full Stack Local Development
+To test the application against a live PostgreSQL database:
 
-**Setup BFF & Database**
+**1. Setup the Database & BFF**
 ```bash
 cd server
 npm install
+
+# Create your local environment file
 cp .env.example .env
-# Fill in your DB credentials in server/.env
+# Edit server/.env with your PostgreSQL credentials
+
+# Start the Express server (runs on port 5001 by default)
 npm run dev
 ```
 
-**Connect Frontend to BFF**
-In the root directory, create a `.env.local` file:
-```env
-VITE_API_URL=http://localhost:5001
-```
-Then start the frontend:
+**2. Connect the Frontend**
+Open a new terminal at the project root and point Vite to your local BFF:
 ```bash
+# Create local environment config
+cp .env.local.example .env.local
+# Ensure VITE_API_URL=http://localhost:5001 is set
+
+# Start the frontend
 npm run dev
 ```
 
-## Docker Deployment
+---
+
+## 🐳 Docker Deployment
+
+The application includes a highly optimized, multi-stage Dockerfile that builds the React application and serves it statically via the Express BFF.
+
 ```bash
+# Build the production image
 docker build -t medication-reminder-ui .
-docker run -p 8080:8080 medication-reminder-ui
+
+# Run the container (maps to port 8080)
+docker run -p 8080:8080 -e DB_HOST=... -e DB_USER=... medication-reminder-ui
 ```
 
-## Documentation
-Additional documentation and artifacts are located in `docs/`.
+---
+
+## 📂 Project Structure
+
+```text
+medication-reminder-ui/
+├── docs/                   # Architectural diagrams, ERDs, and assignment details
+├── server/                 # Node.js Express BFF
+│   ├── db/                 # PostgreSQL connection pool, schema, and seed scripts
+│   ├── middleware/         # Express middleware (logging, etc.)
+│   ├── routes/             # Modular API routes
+│   └── index.js            # Server entry point
+├── src/                    # React Frontend
+│   ├── components/         # Reusable UI components (Sidebar, Topbar)
+│   ├── constants/          # Application-wide constants (Routes)
+│   ├── data/               # Local mock data fallback payload
+│   ├── pages/              # The 5 primary dashboard views
+│   ├── services/           # Universal API fetch layer
+│   ├── utils/              # Helper functions (PDF/CSV exports)
+│   ├── App.jsx             # Main Router and Layout
+│   └── index.css           # Global design system tokens
+├── .github/workflows/      # CI/CD Pipelines (Cloud Run deployment)
+├── Dockerfile              # Multi-stage container build
+└── package.json            # Project configuration and scripts
+```
+
+---
+
+## 📜 Scripts
+
+| Script | Description |
+|--------|-------------|
+| `npm run dev` | Starts the Vite dev server with HMR. |
+| `npm run build` | Compiles the React app for production into `dist/`. |
+| `npm run lint` | Runs `oxlint` across the codebase to catch errors. |
+| `npm run lint:fix` | Automatically fixes auto-correctable linting issues. |
+
+*(The `server/` directory has its own `npm start` and `npm run dev` scripts for managing the backend.)*
