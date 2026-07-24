@@ -9,19 +9,19 @@ A production-grade, full-stack application designed for the **Aetna Medication R
 
 ---
 
-## ✨ Key Features
+## Key Features
 
 The application is composed of 5 primary, interconnected workflows:
 
-- 💊 **Prescription Dashboard**: A comprehensive view of pending pickups, fulfillment statuses, and member prescription details.
-- 📋 **Eligibility Review**: An intelligent rules-engine interface to determine member communication eligibility, consent status, and preferred channels.
-- 🎯 **Campaign Preview**: A command center for scheduling, previewing, and managing targeted reminder campaigns across SMS, Email, and Push notifications.
-- 📡 **Communication Status**: Real-time telemetry on notification delivery, bounce rates, and message suppression logs.
-- 📊 **Summary Dashboard**: High-level aggregated metrics, success rates, and active campaign analytics at a glance.
+- **Prescription Dashboard**: A comprehensive view of pending pickups, fulfillment statuses, and member prescription details.
+- **Eligibility Review**: An intelligent rules-engine interface to determine member communication eligibility, consent status, and preferred channels.
+- **Campaign Preview**: A command center for scheduling, previewing, and managing targeted reminder campaigns across SMS, Email, and Push notifications.
+- **Communication Status**: Real-time telemetry on notification delivery, bounce rates, and message suppression logs.
+- **Summary Dashboard**: High-level aggregated metrics, success rates, and active campaign analytics at a glance.
 
 ---
 
-## 🏗 Architecture & Tech Stack
+## Architecture & Tech Stack
 
 This project follows a modern **Backend-For-Frontend (BFF)** architectural pattern.
 
@@ -34,7 +34,7 @@ This project follows a modern **Backend-For-Frontend (BFF)** architectural patte
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Node.js (v20+ recommended)
@@ -81,7 +81,7 @@ npm run dev
 
 ---
 
-## 🐳 Docker Deployment
+## Docker Deployment
 
 The application includes a highly optimized, multi-stage Dockerfile that builds the React application and serves it statically via the Express BFF.
 
@@ -95,7 +95,7 @@ docker run -p 8080:8080 -e DB_HOST=... -e DB_USER=... medication-reminder-ui
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```text
 medication-reminder-ui/
@@ -121,7 +121,7 @@ medication-reminder-ui/
 
 ---
 
-## 📜 Scripts
+## Scripts
 
 | Script | Description |
 |--------|-------------|
